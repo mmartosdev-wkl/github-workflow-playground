@@ -29,20 +29,10 @@ jobs:
                 with:
                     script: |
                         // Retrieve all releases
-                        console.log("github -> " + github);
-                        console.log("github.rateLimit -> " + github.rateLimit);
-                        console.log("context.repo -> " + context.repo);
-                        console.log("github.repos -> " + github.repos);
-                        console.log("github.rest -> " + github.rest);
-                        console.log("github.rest.repos -> " + github.rest.repos);
-                        const rateLimit = await github.rest.rateLimit.get();
-                        console.log("rateLimit -> " + rateLimit.data);
                         const { data: releases } = await github.rest.repos.listReleases({
                             owner: context.repo.owner,
                             repo: context.repo.repo,
                         });
-                        releases.forEach(release => console.log(release));
-                
                         // Filter releases for those with a version tag where the patch number = 0 (e.g., v1.2.0)
                         const filteredReleases = releases.filter(release => {
                             const match = release.tag_name.match(/^\d+\.\d+\.0$/);
@@ -51,7 +41,7 @@ jobs:
                 
                         // If there's at least one matching release, log them; otherwise fail
                         if (filteredReleases.length !== 0) {
-                            filteredReleases.forEach(release => console.log(release));
+                            filteredReleases.forEach(release => console.log(release.tag_name));
                         } else {
                             core.setFailed("No releases with patch version 0 found.");
                         }
