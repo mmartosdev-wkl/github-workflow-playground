@@ -101,7 +101,7 @@ jobs:
                           echo "Branch #1.1 ${CURRENT_VERSION_TAG}"
                             echo "version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
                         fi
-                    elif [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n ${{ inputs.version_tag }} ]; then
+                    elif [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ inputs.version_tag }}" ]; then
                         echo "Branch #2 ${{ inputs.version_tag }}"
                         echo "version_tag=${{ inputs.version_tag }}" >> $GITHUB_OUTPUT
                     else
