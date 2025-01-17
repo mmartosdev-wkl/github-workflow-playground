@@ -136,7 +136,7 @@ jobs:
                     git config user.name "wikiloc-forest"
                     git add app/gradle.properties
                     git commit -m "build: ${{ steps.version_tag.outputs.version_tag }}-${{ steps.bump_version.outputs.version_code }}"
-                    git tag -a "${{ steps.version_tag.outputs.version_tag }}" -m "Release version ${{ steps.version_tag.outputs.version_tag }}"
+#                    git tag -a "${{ steps.version_tag.outputs.version_tag }}" -m "Release version ${{ steps.version_tag.outputs.version_tag }}"
 
             -   name: Push Release Branch and Tag
                 run: |
@@ -144,7 +144,7 @@ jobs:
                         git pull origin "${{ steps.create_branch.outputs.new_branch }}" 
                     fi
                     git push origin "${{ steps.create_branch.outputs.new_branch }}"
-                    git push origin tag "${{ steps.version_tag.outputs.version_tag }}"
+#                    git push origin tag "${{ steps.version_tag.outputs.version_tag }}"
 
             -   name: Update dev branch
                 run: |
