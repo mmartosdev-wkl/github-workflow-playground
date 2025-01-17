@@ -232,13 +232,24 @@ jobs:
                   version: ${{ steps.version_tag.outputs.version_tag }}
                   publish: true
 
-            -   name: Publish release notes
-                if: github.ref_name != 'dev'
-                uses: actions/create-release@v1
-                env:
-                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            -   name: Create GitHub Release
+                uses: softprops/action-gh-release@v1
                 with:
                     tag_name: ${{ steps.version_tag.outputs.version_tag }}
-                    release_name: "${{ steps.version_tag.outputs.version_tag }}"
-                    draft: false
-                    prerelease: false
+                    name: "${{ steps.version_tag.outputs.version_tag }}"
+                    body: |
+                          ## What’s Changed
+
+                          - ${{ github.event.pull_request.title }} by @${{ github.event.pull_request.user.login }} in ${{ github.event.pull_request.id }}
+                env:
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#            -   name: Publish release notes
+#                if: github.ref_name != 'dev'
+#                uses: actions/create-release@v1
+#                env:
+#                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#                with:
+#                    tag_name: ${{ steps.version_tag.outputs.version_tag }}
+#                    release_name: "${{ steps.version_tag.outputs.version_tag }}"
+#                    draft: false
+#                    prerelease: false
