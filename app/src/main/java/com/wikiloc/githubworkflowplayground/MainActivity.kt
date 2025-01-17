@@ -46,6 +46,6 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Composable
 fun GreetingPreview() {
   GithubWorkflowPlaygroundTheme {
-    Greeting("Android")
+    Greeting("Wikiloc")
   }
 }
