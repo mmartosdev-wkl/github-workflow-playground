@@ -22,13 +22,15 @@ jobs:
         permissions:
             contents: write
             pull-requests: write
-        if: >
-          (
-              github.event_name == 'pull_request' &&
-              github.event.pull_request.base.ref == 'dev'
-          )
         runs-on: ubuntu-latest
         steps:
+            -   name: Check base branch
+                run: |
+                    if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.base.ref }}" != "dev"]; then
+                        echo "Skipping drafting"
+                        exit 0
+                    fi
+
             -   name: Checkout codebase
                 uses: actions/checkout@v4
                 with:
@@ -47,7 +49,7 @@ jobs:
                 with:
                   config-name: workflows/releaseDrafter/config.yml
                   version: ${{ steps.version_tag.outputs.version_tag }}
-                  publish: ${{ github.ref_name != 'dev' }}
+                  publish: true
 
     release:
         name: Release Preparation
