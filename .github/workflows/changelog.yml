@@ -41,6 +41,7 @@ jobs:
                             owner: context.repo.owner,
                             repo: context.repo.repo,
                         });
+                        releases.forEach(release => console.log(release));
                 
                         // Filter releases for those with a version tag where the patch number = 0 (e.g., v1.2.0)
                         const filteredReleases = releases.filter(release => {
