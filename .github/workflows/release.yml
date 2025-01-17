@@ -50,6 +50,7 @@ jobs:
                   echo "version_tag=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
 
             -   name: Update release notes
+                if: steps.check.outputs.should_run == 'true'
                 uses: release-drafter/release-drafter@v6
                 env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
