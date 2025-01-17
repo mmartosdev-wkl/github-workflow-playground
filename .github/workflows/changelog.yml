@@ -42,7 +42,7 @@ jobs:
                             },
                         );
                         console.log(response);
-                        const { data: releases } = response;
+                        const releases = response;
                         // Filter releases for those with a version tag where the patch number = 0 (e.g., v1.2.0)
                         const filteredReleases = releases.filter(release => {
                             const match = release.tag_name.match(/^\d+\.\d+\.0$/);
