@@ -1,0 +1,42 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+change-template: '- $TITLE by @$AUTHOR in #$NUMBER'
+template: |
+    ## What’s Changed
+    
+    $CHANGES
+    
+    **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
+categories:
+    - title: 🚀 Features
+      labels:
+          - feature
+          - enhancement
+    - title: 🐛 Bug Fixes
+      labels:
+          - fix
+          - bug
+    - title: 🧹 Refactor
+      labels:
+          - refactor
+    - title: ⛔️ Deprecated
+      labels:
+          - deprecated
+    - title: 🗑 Removed
+      labels:
+          - removed
+    - title: 🔐 Security
+      labels:
+          - security
+    - title: 📄 Documentation
+      labels:
+          - docs
+          - documentation
+    - title: 🧩 Dependency Updates
+      labels:
+          - deps
+          - dependencies
+    - title: 🤖 CI
+      labels:
+          - ci
+      collapse-after: 8
