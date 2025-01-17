@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
   Text(
-    text = "Hello, $name!",
+    text = "Hi, $name!",
     modifier = modifier.border(1.dp, MaterialTheme.colorScheme.primary).padding(24.dp)
   )
 }
