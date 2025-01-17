@@ -25,25 +25,31 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             -   name: Check base branch
+                id: check
                 run: |
                     if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.base.ref }}" != "dev"]; then
                         echo "Skipping drafting"
-                        exit 0
+                        echo "should_run=false" >> $GITHUB_OUTPUT
+                    else
+                        echo "should_run=true" >> $GITHUB_OUTPUT
                     fi
 
             -   name: Checkout codebase
+                if: steps.check.outputs.should_run == 'true'
                 uses: actions/checkout@v4
                 with:
                   fetch-depth: 0
 
             -   name: Get version tag
+                if: steps.check.outputs.should_run == 'true'
                 id: version_tag
                 run: |
                   VERSION_LINE=$(grep '^versionName=' app/gradle.properties)
                   CURRENT_VERSION=${VERSION_LINE#versionName=}
                   echo "version_tag=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
 
-            -   uses: release-drafter/release-drafter@v6
+            -   name: Update release notes
+                uses: release-drafter/release-drafter@v6
                 env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                 with:
@@ -217,7 +223,8 @@ jobs:
                     fi
                     git push origin dev
 
-            -   uses: release-drafter/release-drafter@v6
+            -   name: Publish release notes
+                uses: release-drafter/release-drafter@v6
                 env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                 with:
