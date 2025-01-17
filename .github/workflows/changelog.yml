@@ -34,10 +34,13 @@ jobs:
                         //     owner: context.repo.owner,
                         //     repo: context.repo.repo,
                         // });
-                        const response = await github.paginate(await github.rest.repos.listReleases({
+                        const response = await github.paginate(
+                            github.rest.repos.listReleases,
+                            {
                                 owner: context.repo.owner,
                                 repo: context.repo.repo,
-                        }));
+                            },
+                        );
                         console.log(response);
                         const { data: releases } = response;
                         // Filter releases for those with a version tag where the patch number = 0 (e.g., v1.2.0)
