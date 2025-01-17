@@ -4,7 +4,7 @@ on:
     workflow_dispatch:
         inputs:
             version_tag:
-                description: 'New version tag (eg: 3.45.2)'
+                description: 'New version tag (eg: 3.45.2 or empty)'
                 required: false
     pull_request:
         branches:
@@ -64,7 +64,7 @@ jobs:
             -   name: Validate input version
                 run: |
                     VERSION="${{ inputs.version_tag }}"
-                    if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                    if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "$VERSION" ] && [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
                         echo "Error: '$VERSION' is not a valid semantic version (expected format: MAJOR.MINOR.PATCH)."
                         exit 1
                     fi
@@ -89,19 +89,20 @@ jobs:
             -   name: Get version tag
                 id: version_tag
                 run: |
+                    CURRENT_VERSION_TAG=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
                     if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
-                        VERSION_LINE=$(grep '^versionName=' app/gradle.properties)
-                        CURRENT_VERSION=${VERSION_LINE#versionName=}
                         if [ ${{ github.ref_name != 'dev' }} ]; then
-                            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+                            IFS='.' read -r MAJOR MINOR PATCH <<< "CURRENT_VERSION_TAG"
                             NEW_PATCH=$((PATCH + 1))
                             NEW_VERSION_TAG="$MAJOR.$MINOR.$NEW_PATCH"
                             echo "version_tag=${NEW_VERSION_TAG}" >> $GITHUB_OUTPUT
                         else
-                            echo "version_tag=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
+                            echo "version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
                         fi
-                    elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+                    elif [[ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "CURRENT_VERSION_TAG" ]]; then
                         echo "version_tag=${{ inputs.version_tag }}" >> $GITHUB_OUTPUT
+                    else
+                        echo "version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
                     fi
 
             -   name: Create new release branch
