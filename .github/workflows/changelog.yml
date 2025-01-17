@@ -17,6 +17,7 @@ jobs:
             contents: write
             pull-requests: write
         runs-on: ubuntu-latest
+        if: github.event.pull_request.merged == true
         steps:
             -   name: Checkout codebase
                 uses: actions/checkout@v4
@@ -26,7 +27,6 @@ jobs:
             -   name: Identify last release cut
                 id: last_release
                 uses: actions/github-script@v7
-                if: github.event.pull_request.merged == true
                 with:
                     script: |
                         // Retrieve all releases
@@ -58,3 +58,21 @@ jobs:
                     CURRENT_VERSION_TAG=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
                     echo "version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
                     echo "version_tag -> ${CURRENT_VERSION_TAG}"
+
+            -   name: Identify commits
+                id: commits
+                uses: actions/github-script@v7
+                with:
+                    script: |
+                        const { data: last_release_commit } = await github.rest.repos.getCommit({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            ref: ${{ steps.last_release.outputs.version_tag }},
+                        })
+                        const { data: current_release_commit } = await github.rest.repos.getCommit({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            ref: ${{ steps.current_release.outputs.version_tag }},
+                        })
+                        console.log(last_release_commit);
+                        console.log(current_release_commit);
