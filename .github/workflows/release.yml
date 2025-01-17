@@ -112,7 +112,6 @@ jobs:
                             NEW_PATCH=$((PATCH + 1))
                             NEW_VERSION_TAG="$MAJOR.$MINOR.$NEW_PATCH"
                             echo "version_tag=${NEW_VERSION_TAG}" >> $GITHUB_OUTPUT
-                            echo "old_version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
                         else
                             echo "version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
                         fi
@@ -231,4 +230,4 @@ jobs:
                   config-name: workflows/releaseDrafter/config.yml
                   version: ${{ steps.version_tag.outputs.version_tag }}
                   publish: true
-                  commitish: refs/tags/${{ steps.version_tag.outputs.old_version_tag }}
+                  commitish: refs/heads/${{ github.ref_name }}
