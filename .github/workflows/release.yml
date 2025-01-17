@@ -27,7 +27,7 @@ jobs:
             -   name: Check base branch
                 id: check
                 run: |
-                    if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.base.ref }}" != "dev"]; then
+                    if [ "${{ github.event_name }}" == "workflow_dispatch" ] || [ "${{ github.event.pull_request.base.ref }}" != "dev"]; then
                         echo "Skipping drafting"
                         echo "should_run=false" >> $GITHUB_OUTPUT
                     else
