@@ -53,7 +53,7 @@ jobs:
                 with:
                     token: ${{ secrets.LOKALISE_PAT }}
                     ref: ${{ steps.base_branch.outputs.base_branch }}
-                    lfs: true
+#                    lfs: true
                     fetch-depth: 0
 
             -   name: Get version tag
