@@ -64,15 +64,24 @@ jobs:
                 uses: actions/github-script@v7
                 with:
                     script: |
+                        const lastVersionTag = process.env.LAST_VERSION_TAG;
+                        const currentVersionTag = process.env.CURRENT_VERSION_TAG;
+                        
+                        console.log(`Last version tag: ${lastVersionTag}`);
+                        console.log(`Current version tag: ${currentVersionTag}`);
+                        
                         const { data: last_release_commit } = await github.rest.repos.getCommit({
                             owner: context.repo.owner,
                             repo: context.repo.repo,
-                            ref: ${{ steps.last_release.outputs.version_tag }},
+                            ref: lastVersionTag,
                         })
                         const { data: current_release_commit } = await github.rest.repos.getCommit({
                             owner: context.repo.owner,
                             repo: context.repo.repo,
-                            ref: ${{ steps.current_release.outputs.version_tag }},
+                            ref: currentVersionTag,
                         })
                         console.log(last_release_commit);
                         console.log(current_release_commit);
+                env:
+                    LAST_VERSION_TAG: ${{ steps.last_release.outputs.version_tag }}
+                    CURRENT_VERSION_TAG: ${{ steps.current_release.outputs.version_tag }}
