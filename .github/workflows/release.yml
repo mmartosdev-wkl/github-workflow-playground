@@ -95,13 +95,17 @@ jobs:
                             IFS='.' read -r MAJOR MINOR PATCH <<< "CURRENT_VERSION_TAG"
                             NEW_PATCH=$((PATCH + 1))
                             NEW_VERSION_TAG="$MAJOR.$MINOR.$NEW_PATCH"
+                            echo "Branch #1.1 ${NEW_VERSION_TAG}"
                             echo "version_tag=${NEW_VERSION_TAG}" >> $GITHUB_OUTPUT
                         else
+                          echo "Branch #1.1 ${CURRENT_VERSION_TAG}"
                             echo "version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
                         fi
                     elif [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n ${{ inputs.version_tag }} ]; then
+                        echo "Branch #2 ${{ inputs.version_tag }}"
                         echo "version_tag=${{ inputs.version_tag }}" >> $GITHUB_OUTPUT
                     else
+                      echo "Branch #3 ${CURRENT_VERSION_TAG}"
                         echo "version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
                     fi
 
