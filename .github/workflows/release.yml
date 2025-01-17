@@ -112,17 +112,14 @@ jobs:
                             NEW_PATCH=$((PATCH + 1))
                             NEW_VERSION_TAG="$MAJOR.$MINOR.$NEW_PATCH"
                             echo "version_tag=${NEW_VERSION_TAG}" >> $GITHUB_OUTPUT
-                            echo "Branch #1 ${NEW_VERSION_TAG}"
+                            echo "old_version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
                         else
                             echo "version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
-                            echo "Branch #2 ${CURRENT_VERSION_TAG}"
                         fi
                     elif [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ inputs.version_tag }}" ]; then
                         echo "version_tag=${{ inputs.version_tag }}" >> $GITHUB_OUTPUT
-                        echo "Branch #3 ${{ inputs.version_tag }}"
                     else
                         echo "version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
-                        echo "Branch #4 ${CURRENT_VERSION_TAG}"
                     fi
 
             -   name: Create new release branch
@@ -234,4 +231,4 @@ jobs:
                   config-name: workflows/releaseDrafter/config.yml
                   version: ${{ steps.version_tag.outputs.version_tag }}
                   publish: true
-                  commitish: refs/heads/${{ github.ref_name }}
+                  commitish: refs/tags/${{ steps.version_tag.outputs.old_version_tag }}
