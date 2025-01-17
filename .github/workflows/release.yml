@@ -223,7 +223,7 @@ jobs:
                     git push origin dev
 
             -   name: Publish release notes
-                if: github.ref_name == "dev"
+                if: github.ref_name == 'dev'
                 uses: release-drafter/release-drafter@v6
                 env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -233,7 +233,7 @@ jobs:
                   publish: true
 
             -   name: Publish release notes
-                if: github.ref_name != "dev"
+                if: github.ref_name != 'dev'
                 uses: actions/create-release@v1
                 env:
                     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
