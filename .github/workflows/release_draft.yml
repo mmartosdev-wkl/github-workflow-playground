@@ -5,6 +5,7 @@ on:
         branches:
             - 'dev'
             - 'release_*'
+        types: [ 'closed' ]
 
 concurrency:
     group: ${{ github.workflow }}
