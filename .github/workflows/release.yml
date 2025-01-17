@@ -5,7 +5,7 @@ on:
         inputs:
             version_tag:
                 description: 'New version tag (eg: 3.45.2)'
-                required: true
+                required: false
     pull_request:
         branches:
             - 'dev'
