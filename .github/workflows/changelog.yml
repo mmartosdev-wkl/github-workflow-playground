@@ -29,6 +29,9 @@ jobs:
                 with:
                     script: |
                         // Retrieve all releases
+                        const rateLimit = await github.rateLimit.get();
+                        console.log("rateLimit -> " + rateLimit.data);
+                        console.log("context.repo -> " + context.repo);
                         console.log("github.repos -> " + github.repos);
                         const { data: releases } = await github.repos.listReleases({
                             owner: context.repo.owner,
