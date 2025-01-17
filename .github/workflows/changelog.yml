@@ -73,12 +73,12 @@ jobs:
                         const { data: last_release_commit } = await github.rest.repos.getCommit({
                             owner: context.repo.owner,
                             repo: context.repo.repo,
-                            ref: lastVersionTag,
+                            ref: `refs/tags/${lastVersionTag}`,
                         })
                         const { data: current_release_commit } = await github.rest.repos.getCommit({
                             owner: context.repo.owner,
                             repo: context.repo.repo,
-                            ref: currentVersionTag,
+                            ref: `refs/tags/${currentVersionTag}`,
                         })
                         console.log(last_release_commit);
                         console.log(current_release_commit);
