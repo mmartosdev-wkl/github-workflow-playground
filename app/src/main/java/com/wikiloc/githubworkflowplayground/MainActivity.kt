@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,7 +27,7 @@ class MainActivity : ComponentActivity() {
     setContent {
       GithubWorkflowPlaygroundTheme {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-          Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+          Box(modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)), contentAlignment = Alignment.Center) {
             Greeting(
               name = "Wikiloc",
               modifier = Modifier.padding(innerPadding)
