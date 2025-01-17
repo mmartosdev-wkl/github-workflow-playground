@@ -99,7 +99,7 @@ jobs:
                         else
                             echo "version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
                         fi
-                    elif [[ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "CURRENT_VERSION_TAG" ]]; then
+                    elif [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "CURRENT_VERSION_TAG" ]; then
                         echo "version_tag=${{ inputs.version_tag }}" >> $GITHUB_OUTPUT
                     else
                         echo "version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
