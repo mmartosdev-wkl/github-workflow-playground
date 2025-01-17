@@ -46,3 +46,4 @@ fun GithubWorkflowPlaygroundTheme(
     content = content
   )
 }
+
