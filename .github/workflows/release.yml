@@ -58,6 +58,7 @@ jobs:
                   config-name: workflows/releaseDrafter/config.yml
                   version: ${{ steps.version_tag.outputs.version_tag }}
                   publish: false
+                  commitish: refs/heads/dev
 
     release:
         name: Release Preparation
@@ -233,3 +234,4 @@ jobs:
                   config-name: workflows/releaseDrafter/config.yml
                   version: ${{ steps.version_tag.outputs.version_tag }}
                   publish: true
+                  commitish: refs/heads/${{ steps.create_branch.outputs.new_branch }}

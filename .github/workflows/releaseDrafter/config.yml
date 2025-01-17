@@ -40,3 +40,4 @@ categories:
       labels:
           - ci
       collapse-after: 8
+filter-by-commitish: true
