@@ -211,4 +211,4 @@ jobs:
                 with:
                   config-name: workflows/releaseDrafter/config.yml
                   version: ${{ steps.version_tag.outputs.version_tag }}
-                  publish: ${{ github.ref_name != 'dev' }}
+                  publish: true
