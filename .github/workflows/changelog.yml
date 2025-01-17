@@ -47,3 +47,5 @@ jobs:
                         } else {
                             core.setFailed("No releases with patch version 0 found.");
                         }
+                env:
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
