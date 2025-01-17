@@ -231,7 +231,6 @@ jobs:
                   config-name: workflows/releaseDrafter/config.yml
                   version: ${{ steps.version_tag.outputs.version_tag }}
                   publish: true
-                  commitish: refs/heads/${{ github.ref_name }}
 
             -   name: Publish release notes
                 if: github.ref_name != "dev"
