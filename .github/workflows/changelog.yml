@@ -24,6 +24,12 @@ jobs:
                 with:
                     fetch-depth: 0
 
+            -   name: Identify current version tag
+                id: current_release
+                run: |
+                    CURRENT_VERSION_TAG=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
+                    echo "version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
+
             -   name: Identify last release cut
                 id: last_release
                 uses: actions/github-script@v7
@@ -53,12 +59,6 @@ jobs:
                 env:
                     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-            -   name: Identify current version tag
-                id: current_release
-                run: |
-                    CURRENT_VERSION_TAG=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
-                    echo "version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
-
             -   name: Identify commits
                 id: commits
                 uses: actions/github-script@v7
@@ -67,24 +67,16 @@ jobs:
                         const lastVersionTag = process.env.LAST_VERSION_TAG;
                         const currentVersionTag = process.env.CURRENT_VERSION_TAG;
                         const changelog = require('.github/workflows/changelog/changelog.js')
-                        
-                        const res = await changelog.getCommitHashFromRef(
-                            github,
-                            context,
-                            `refs/tags/${lastVersionTag}`,
-                        );
-                        console.log("----> " + res);
-                        
-                        const { data: lastReleaseCommit } = await github.rest.repos.getCommit({
-                            owner: context.repo.owner,
-                            repo: context.repo.repo,
+                        const res = await changelog.getCommitHashFromRef({
+                            github: github,
+                            context: context,
                             ref: `refs/tags/${lastVersionTag}`,
-                        })
-                        const { data: currentReleaseCommit } = await github.rest.repos.getCommit({
-                            owner: context.repo.owner,
-                            repo: context.repo.repo,
+                        });
+                        const res = await changelog.getCommitHashFromRef({
+                            github: github,
+                            context: context,
                             ref: `refs/heads/dev`,
-                        })
+                        });
                         core.setOutput("last_release_commit", lastReleaseCommit.sha);
                         core.setOutput("current_release_commit", currentReleaseCommit.sha);
                         console.log(lastReleaseCommit.sha);
@@ -134,3 +126,18 @@ jobs:
                 env:
                     LAST_RELEASE_COMMIT: ${{ steps.commits.outputs.last_release_commit }}
                     CURRENT_VERSION_COMMIT: ${{ steps.commits.outputs.current_release_commit }}
+
+            -   name: Unified
+                id: unified
+                uses: actions/github-script@v7
+                with:
+                    script: |
+                        const changelog = require('.github/workflows/changelog/changelog.js')
+                        await changelog.changelog({
+                            github: github,
+                            context: context,
+                            tagName: process.env.CURRENT_VERSION_TAG,
+                        });
+                env:
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                    CURRENT_VERSION_TAG: ${{ steps.current_release.outputs.version_tag }}
