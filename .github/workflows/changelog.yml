@@ -102,9 +102,7 @@ jobs:
                                 basehead: `${lastReleaseCommit}...${currentReleaseCommit}`,
                             },
                         );
-                        console.log(compare);
-                        console.log(compare.commits);
-                        compare.commits.forEach((commit)=>{console.log(commit.sha);});
+                        compare[0].commits.forEach((commit)=>{console.log(commit.sha);});
                 env:
                     LAST_RELEASE_COMMIT: ${{ steps.commits.outputs.last_release_commit }}
                     CURRENT_VERSION_COMMIT: ${{ steps.commits.outputs.current_release_commit }}
