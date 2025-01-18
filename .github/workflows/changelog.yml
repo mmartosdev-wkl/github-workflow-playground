@@ -102,8 +102,9 @@ jobs:
                                 basehead: `${lastReleaseCommit}...${currentReleaseCommit}`,
                             },
                         );
+                        const commitSHAs = compare[0].commits.map((commit)=>{commit.sha}); 
                         console.log("Commits");
-                        compare[0].commits.forEach((commit)=>{console.log(commit.sha);});
+                        commitSHAs.forEach((sha)=>{console.log(sha);});
                         
                         // Retrieve all pull requests
                         const pullRequests = await github.paginate(
@@ -123,8 +124,8 @@ jobs:
                             console.log("Filtering");
                             console.log(pullRequest.merged_at);
                             console.log(pullRequest.head.sha);
-                            console.log(compare[0].commits.includes(pullRequest.head.sha));
-                            return pullRequest.merged_at !== null && pullRequest.head.sha !== null && compare[0].commits.includes(pullRequest.head.sha);
+                            console.log(commitSHAs.includes(pullRequest.head.sha));
+                            return pullRequest.merged_at !== null && pullRequest.head.sha !== null && commitSHAs.includes(pullRequest.head.sha);
                         });
                         console.log("Pull Requests - Filtered");
                         filteredPullRequests.forEach((pr)=>{console.log(`${pr.title} #${pr.number} [${pr.head.sha}]`);});
