@@ -90,7 +90,7 @@ async function getMergedPullRequestsFromCommitHashes(params) {
             return filteredData;
         },
     );
-    return pullRequests.filter(pullRequest => pullRequest.merged_at !== null && pullRequest.head.sha !== null && params.commitHashes.includes(pullRequest.head.sha));
+    return pullRequests.filter(pullRequest => pullRequest.merged_at !== null && pullRequest.head.sha !== null && params.commitHashes.includes(pullRequest.head.sha) && pullRequest.base.ref === params.baseRef);
 }
 
 async function createReleaseDraft(params) {
@@ -128,6 +128,7 @@ async function createReleaseDraft(params) {
             lastVersionHashAndDate: lastVersionHashAndDate,
             currentVersionHashAndDate: currentVersionHashAndDate,
             commitHashes: commitHashes,
+            baseRef: 'dev',
         });
         console.log(pullRequests);
 
@@ -203,6 +204,9 @@ function removePatch(versionTag) {
 
 async function publishRelease(params) {
     try {
+        // Get base ref
+        const baseRef = `release_${removePatch(params.tagName)}`;
+
         // Get hash and date from old and current version tags
         const lastVersionHashAndDate = await getCommitHashAndDateFromRef({
             github: params.github,
@@ -212,7 +216,7 @@ async function publishRelease(params) {
         const currentVersionHashAndDate = await getCommitHashAndDateFromRef({
             github: params.github,
             context: params.context,
-            ref: `refs/heads/release_${removePatch(params.tagName)}`,
+            ref: `refs/heads/${baseRef}`,
         });
 
         // Retrieve all commits between the two versions
@@ -230,6 +234,7 @@ async function publishRelease(params) {
             lastVersionHashAndDate: lastVersionHashAndDate,
             currentVersionHashAndDate: currentVersionHashAndDate,
             commitHashes: commitHashes,
+            baseRef: baseRef,
         });
 
         // Create report
