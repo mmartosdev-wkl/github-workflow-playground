@@ -37,7 +37,6 @@ async function getLastVersionTag(options) {
             repo: options.context.repo.repo,
         },
         (response, done) => {
-            console.log("paginate");
             if (response.data.some(release => release.tag_name.match(regex) !== null)) {
                 done();
             }
@@ -68,6 +67,25 @@ async function getCommitHashesFromVersionTags(options) {
     return compare[0].commits.map(commit => commit.sha);
 }
 
+async function getMergedPullRequestsFromCommitHashes(options) {
+    const lastVersionDate = new Date(lastVersionHashAndDate.date);
+    const pullRequests = await options.github.paginate(
+        options.github.rest.pulls.list,
+        {
+            owner: options.context.repo.owner,
+            repo: options.context.repo.repo,
+            state: 'closed',
+        },
+        (response, done) => {
+            const filteredData = response.data.filter(pullRequest => new Date(pullRequest.created_at) > lastVersionDate);
+            if (filteredData.length === 0) {
+                done();
+            }
+            return filteredData;
+        },
+    );
+    return pullRequests.filter(pullRequest => pullRequest.merged_at !== null && pullRequest.head.sha !== null && commitSHAs.includes(pullRequest.head.sha));
+}
 
 /**
  * Input params:
@@ -106,6 +124,15 @@ async function changelog(options) {
             currentVersionHash: currentVersionHashAndDate.hash,
         });
         commitHashes.forEach(sha => console.log(sha));
+
+        // Retrieve all merged pull requests that took place in between the commits we've identified
+        const pullRequests = await getMergedPullRequestsFromCommitHashes({
+            github: options.github,
+            context: options.context,
+            lastVersionHashAndDate: lastVersionHashAndDate,
+            currentVersionHashAndDate: currentVersionHashAndDate,
+        });
+        pullRequests.forEach((pr)=> console.log(`${pr.title} #${pr.number} [${pr.head.sha}]`));
     } catch (error) {
         console.error("Error:", error.message);
     }
