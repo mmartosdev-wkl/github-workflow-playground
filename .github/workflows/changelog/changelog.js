@@ -100,8 +100,8 @@ async function changelog(options) {
 
         // Retrieve all commits between the two versions
         const commitHashes = await getCommitHashesFromVersionTags({
-            owner: options.context.repo.owner,
-            repo: options.context.repo.repo,
+            github: options.github,
+            context: options.context,
             lastVersionHash: lastVersionHashAndDate.hash,
             currentVersionHash: currentVersionHashAndDate.hash,
         });
