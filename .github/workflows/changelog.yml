@@ -69,8 +69,8 @@ jobs:
                         const changelog = require('.github/workflows/changelog/changelog.js')
                         
                         const res = changelog.getCommitHashFromRef(
-                            context.repo.owner,
-                            context.repo.repo,
+                            github,
+                            context,
                             `refs/tags/${lastVersionTag}`,
                         );
                         console.log("----> " + res);
