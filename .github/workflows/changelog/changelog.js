@@ -37,7 +37,8 @@ async function getLastVersionTag(options) {
             repo: options.context.repo.repo,
         },
         (response, done) => {
-            if (response.data.some(release => release.tag_name.match(regex) !== null)) {
+            console.log(response.data);
+            if (response.data.some(release => release.tag_name.match(regex) !== null && !release.draft)) {
                 done();
             }
             return response.data;
@@ -45,7 +46,7 @@ async function getLastVersionTag(options) {
     );
 
     // Look for the release that matches with the regex
-    const lastRelease = releases.find(release => release.tag_name.match(regex) !== null);
+    const lastRelease = releases.find(release => release.tag_name.match(regex) !== null && !release.draft);
 
     // Return success or reject
     if (lastRelease !== undefined) {
