@@ -120,7 +120,11 @@ jobs:
                         pullRequests.forEach((pr)=>{console.log(`${pr.title} #${pr.number} [${pr.head.sha}]`);});
 
                         const filteredPullRequests = pullRequests.filter(pullRequest => {
-                            return pullRequest.merged_at && pullRequest.head.sha && compare[0].commits.includes(pullRequest.head.sha);
+                            console.log("Filtering");
+                            console.log(pullRequest.merged_at);
+                            console.log(pullRequest.head.sha);
+                            console.log(compare[0].commits.includes(pullRequest.head.sha);
+                            return pullRequest.merged_at !== null && pullRequest.head.sha !== null && compare[0].commits.includes(pullRequest.head.sha);
                         });
                         console.log("Pull Requests - Filtered");
                         filteredPullRequests.forEach((pr)=>{console.log(`${pr.title} #${pr.number} [${pr.head.sha}]`);});
