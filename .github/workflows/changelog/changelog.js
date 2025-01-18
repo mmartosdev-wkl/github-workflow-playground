@@ -50,6 +50,7 @@ async function getReleaseDraftId(params) {
             repo: params.context.repo.repo,
         },
         (response, done) => {
+            console.log(response.data);
             if (response.data.some(release => release.draft)) {
                 done();
             }
