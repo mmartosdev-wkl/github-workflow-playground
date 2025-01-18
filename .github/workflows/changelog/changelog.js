@@ -1,4 +1,4 @@
-
+const MarkdownReport = require('./markdownReport');
 
 async function getCommitHashFromRef(options) {
     const { data: commit } = await options.github.rest.repos.getCommit({
@@ -130,7 +130,14 @@ async function changelog(options) {
             currentVersionHashAndDate: currentVersionHashAndDate,
             commitHashes: commitHashes,
         });
-        pullRequests.forEach((pr)=> console.log(`${pr.title} #${pr.number} [${pr.head.sha}]`));
+        
+        pullRequests.map((pullRequest)=> `${pullRequest.title} by @${pullRequest.user.login} #${pullRequest.number}`);
+
+        // Create report
+        const report = new MarkdownReport(options.tagName);
+        report.addSection('What\'s Changed');
+        report.addList(pullRequests.map((pullRequest)=> `${pullRequest.title} by @${pullRequest.user.login} #${pullRequest.number}`));
+        console.log(report.generate());
     } catch (error) {
         console.error("Error:", error.message);
         return Promise.reject(error);
