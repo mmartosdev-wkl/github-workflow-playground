@@ -84,7 +84,7 @@ async function getMergedPullRequestsFromCommitHashes(options) {
             return filteredData;
         },
     );
-    return pullRequests.filter(pullRequest => pullRequest.merged_at !== null && pullRequest.head.sha !== null && commitSHAs.includes(pullRequest.head.sha));
+    return pullRequests.filter(pullRequest => pullRequest.merged_at !== null && pullRequest.head.sha !== null && options.commitHashes.includes(pullRequest.head.sha));
 }
 
 /**
@@ -131,6 +131,7 @@ async function changelog(options) {
             context: options.context,
             lastVersionHashAndDate: lastVersionHashAndDate,
             currentVersionHashAndDate: currentVersionHashAndDate,
+            commitHashes: commitHashes,
         });
         pullRequests.forEach((pr)=> console.log(`${pr.title} #${pr.number} [${pr.head.sha}]`));
     } catch (error) {
