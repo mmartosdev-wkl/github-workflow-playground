@@ -5,3 +5,7 @@ data class BuildConfig(
   val public: Boolean,
   val fakeBilling: Boolean,
 )
+
+data class Variant(
+  val name: String,
+)
