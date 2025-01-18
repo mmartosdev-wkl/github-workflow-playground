@@ -40,7 +40,7 @@ jobs:
                             github: github,
                             context: context,
                             tagName: process.env.CURRENT_VERSION_TAG,
-                            draft: true,
+                            isDraft: true,
                         });
                 env:
                     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
