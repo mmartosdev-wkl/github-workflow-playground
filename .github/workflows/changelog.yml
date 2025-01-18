@@ -67,20 +67,20 @@ jobs:
                         const lastVersionTag = process.env.LAST_VERSION_TAG;
                         const currentVersionTag = process.env.CURRENT_VERSION_TAG;
                         const changelog = require('.github/workflows/changelog/changelog.js')
-                        const res = await changelog.getCommitHashFromRef({
+                        lastReleaseCommit = await changelog.getCommitHashFromRef({
                             github: github,
                             context: context,
                             ref: `refs/tags/${lastVersionTag}`,
                         });
-                        const res = await changelog.getCommitHashFromRef({
+                        currentReleaseCommit = await changelog.getCommitHashFromRef({
                             github: github,
                             context: context,
                             ref: `refs/heads/dev`,
                         });
-                        core.setOutput("last_release_commit", lastReleaseCommit.sha);
-                        core.setOutput("current_release_commit", currentReleaseCommit.sha);
-                        console.log(lastReleaseCommit.sha);
-                        console.log(currentReleaseCommit.sha);
+                        core.setOutput("last_release_commit", lastReleaseCommit);
+                        core.setOutput("current_release_commit", currentReleaseCommit);
+                        console.log(lastReleaseCommit);
+                        console.log(currentReleaseCommit);
                 env:
                     LAST_VERSION_TAG: ${{ steps.last_release.outputs.version_tag }}
                     CURRENT_VERSION_TAG: ${{ steps.current_release.outputs.version_tag }}
