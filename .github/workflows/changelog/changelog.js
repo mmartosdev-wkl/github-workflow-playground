@@ -192,6 +192,14 @@ async function publishReleaseDraft(params) {
     }
 }
 
+function removePatch(versionTag) {
+    const parts = versionTag.split('.');
+    if (parts.length < 2) {
+        throw new Error('Invalid version tag');
+    }
+    return `${parts[0]}.${parts[1]}`;
+}
+
 async function publishRelease(params) {
     try {
         // Get hash and date from old and current version tags
@@ -203,7 +211,7 @@ async function publishRelease(params) {
         const currentVersionHashAndDate = await getCommitHashAndDateFromRef({
             github: params.github,
             context: params.context,
-            ref: `refs/tags/${params.tagName}`,
+            ref: `refs/heads/release_${removePatch(params.tagName)}`,
         });
 
         // Retrieve all commits between the two versions
