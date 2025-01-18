@@ -50,9 +50,7 @@ async function getReleaseDraftId(params) {
             repo: params.context.repo.repo,
         },
         (response, done) => {
-            const t = response.data.some(release => release.draft);
-            console.log(t);
-            if (response.data.some(release => console.log(release))) {
+            if (response.data.some(release => release.draft)) {
                 done();
             }
             return response.data;
@@ -60,7 +58,7 @@ async function getReleaseDraftId(params) {
     );
 
     // Look for the release that matches with the regex
-    const lastRelease = releases.find(release => release.tag_name === params.tagName && release.draft);
+    const lastRelease = releases.find(release => release.draft);
 
     return (lastRelease !== undefined) ? lastRelease.id : undefined;
 }
