@@ -11,6 +11,21 @@ async function getCommitHashFromRef(options) {
 }
 
 
+async function getCommitHashAndDateFromRef(options) {
+    const { data: commit } = await options.github.rest.repos.getCommit({
+        owner: options.context.repo.owner,
+        repo: options.context.repo.repo,
+        ref: options.ref,
+    });
+    return { 
+        hash: commit.sha,
+        date: commit.commit.author.date,
+    };
+}
+
+
+
+
 async function getLastVersionTag(options) {
     const regex = /^\d+\.\d+\.0$/;
 
@@ -41,6 +56,18 @@ async function getLastVersionTag(options) {
     }
 }
 
+async function getCommitHashesFromVersionTags(options) {
+    const compare = await options.github.paginate(
+        options.github.rest.repos.compareCommitsWithBasehead,
+        {
+            owner: options.context.repo.owner,
+            repo: options.context.repo.repo,
+            basehead: `${options.lastVersionHash}...${options.currentVersionHash}`,
+        },
+    );
+    return compare[0].commits.map(commit => commit.sha);
+}
+
 
 /**
  * Input params:
@@ -58,20 +85,27 @@ async function changelog(options) {
         console.log(`Last version tag: ${lastVersionTag}`);
 
         // Get hash and date from current head and last version tag
-        const lastVersionHash = await getCommitHashFromRef({
+        const lastVersionHashAndDate = await getCommitHashAndDateFromRef({
             github: options.github,
             context: options.context,
             ref: `refs/tags/${lastVersionTag}`,
         });
-        const currentVersionHash = await getCommitHashFromRef({
+        const currentVersionHashAndDate = await getCommitHashAndDateFromRef({
             github: options.github,
             context: options.context,
             ref: 'refs/heads/dev',
         });
-        console.log(`Last version tag: ${lastVersionHash}`);
-        console.log(`Current version tag: ${currentVersionHash}`);
+        console.log(`Last version tag: ${lastVersionHashAndDate}`);
+        console.log(`Current version tag: ${currentVersionHashAndDate}`);
 
-
+        // Retrieve all commits between the two versions
+        const commitHashes = await getCommitHashesFromVersionTags({
+            owner: options.context.repo.owner,
+            repo: options.context.repo.repo,
+            lastVersionHash: lastVersionHashAndDate.hash,
+            currentVersionHash: currentVersionHashAndDate.hash,
+        });
+        commitHashes.forEach(sha => console.log(sha));
     } catch (error) {
         console.error("Error:", error.message);
     }
