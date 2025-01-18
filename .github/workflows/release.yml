@@ -186,7 +186,7 @@ jobs:
                             github: github,
                             context: context,
                             tagName: process.env.CURRENT_VERSION_TAG,
-                            draft: false,
+                            isDraft: false,
                         });
                 env:
                     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
