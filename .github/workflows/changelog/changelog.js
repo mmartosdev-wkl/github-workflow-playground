@@ -77,7 +77,6 @@ async function getMergedPullRequestsFromCommitHashes(options) {
             state: 'closed',
         },
         (response, done) => {
-            console.log('paginating');
             const filteredData = response.data.filter(pullRequest => new Date(pullRequest.created_at) > lastVersionDate);
             if (filteredData.length === 0) {
                 done();
@@ -135,7 +134,16 @@ async function changelog(options) {
         const report = new MarkdownReport(options.tagName);
         report.addSection('What\'s Changed');
         report.addList(pullRequests.map(pullRequest => `${pullRequest.title} by @${pullRequest.user.login} #${pullRequest.number}`));
-        console.log(report.generate());
+
+        // Create release
+        await options.github.rest.repos.createRelease({
+            owner: options.context.repo.owner,
+            repo: options.context.repo.repo,
+            tag_name: options.tagName,
+            name: options.tagName,
+            body: report.generate(),
+            draft: true,
+        });
     } catch (error) {
         console.error("Error:", error.message);
         return Promise.reject(error);
