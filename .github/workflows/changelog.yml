@@ -114,6 +114,7 @@ jobs:
                             },
                         );
                         console.log(pullRequests);
+                        pullRequests.forEach((pr)=>{console.log(`${pr.title} #${pr.id}`);});
                 env:
                     LAST_RELEASE_COMMIT: ${{ steps.commits.outputs.last_release_commit }}
                     CURRENT_VERSION_COMMIT: ${{ steps.commits.outputs.current_release_commit }}
