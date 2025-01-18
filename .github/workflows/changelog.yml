@@ -66,6 +66,14 @@ jobs:
                     script: |
                         const lastVersionTag = process.env.LAST_VERSION_TAG;
                         const currentVersionTag = process.env.CURRENT_VERSION_TAG;
+                        const changelog = require('./changelog/changelog.js')
+                        
+                        const res = changelog.getCommitHashFromRef(
+                            context.repo.owner,
+                            context.repo.repo,
+                            `refs/tags/${lastVersionTag}`,
+                        );
+                        console.log("----> " + res);
                         
                         const { data: lastReleaseCommit } = await github.rest.repos.getCommit({
                             owner: context.repo.owner,
@@ -117,16 +125,10 @@ jobs:
                         );
                         
                         // Skip PR that doesn't have a merge_at value and sha is not in the commit list
-                        console.log("Pull Requests - Unfiltered");
-                        pullRequests.forEach((pr)=>{console.log(`${pr.title} #${pr.number} [${pr.head.sha}]`);});
-
                         const filteredPullRequests = pullRequests.filter(pullRequest => {
-                            console.log("Filtering");
-                            console.log(pullRequest.merged_at);
-                            console.log(pullRequest.head.sha);
-                            console.log(commitSHAs.includes(pullRequest.head.sha));
                             return pullRequest.merged_at !== null && pullRequest.head.sha !== null && commitSHAs.includes(pullRequest.head.sha);
                         });
+                    
                         console.log("Pull Requests - Filtered");
                         filteredPullRequests.forEach((pr)=>{console.log(`${pr.title} #${pr.number} [${pr.head.sha}]`);});
                 env:
