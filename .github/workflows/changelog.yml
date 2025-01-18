@@ -115,7 +115,7 @@ jobs:
                         );
                         
                         // Skip PR that doesn't have a merge_at value
-                        const filteredPullRequests = releases.filter(pullRequest => {
+                        const filteredPullRequests = pullRequests.filter(pullRequest => {
                             return pullRequest.merged_at !== null;
                         });
                         filteredPullRequests.forEach((pr)=>{console.log(`${pr.title} #${pr.id}`);});
