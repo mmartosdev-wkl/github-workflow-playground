@@ -198,12 +198,12 @@ async function publishRelease(params) {
         const lastVersionHashAndDate = await getCommitHashAndDateFromRef({
             github: params.github,
             context: params.context,
-            ref: `refs/tags/${oldTagName}`,
+            ref: `refs/tags/${params.oldTagName}`,
         });
         const currentVersionHashAndDate = await getCommitHashAndDateFromRef({
             github: params.github,
             context: params.context,
-            ref: `refs/tags/${tagName}`,
+            ref: `refs/tags/${params.tagName}`,
         });
 
         // Retrieve all commits between the two versions
