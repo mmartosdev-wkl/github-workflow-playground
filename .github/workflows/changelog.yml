@@ -103,6 +103,17 @@ jobs:
                             },
                         );
                         compare[0].commits.forEach((commit)=>{console.log(commit.sha);});
+                        
+                        // Retrieve all pull requests
+                        const pullRequests = await github.paginate(
+                            github.rest.pulls.list,
+                            {
+                                owner: context.repo.owner,
+                                repo: context.repo.repo,
+                                state: 'closed',
+                            },
+                        );
+                        console.log(pullRequests);
                 env:
                     LAST_RELEASE_COMMIT: ${{ steps.commits.outputs.last_release_commit }}
                     CURRENT_VERSION_COMMIT: ${{ steps.commits.outputs.current_release_commit }}
