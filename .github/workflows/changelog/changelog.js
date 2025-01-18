@@ -77,6 +77,7 @@ async function getMergedPullRequestsFromCommitHashes(options) {
             state: 'closed',
         },
         (response, done) => {
+            console.log('paginating');
             const filteredData = response.data.filter(pullRequest => new Date(pullRequest.created_at) > lastVersionDate);
             if (filteredData.length === 0) {
                 done();
@@ -100,7 +101,6 @@ async function changelog(options) {
             github: options.github,
             context: options.context,
         });
-        console.log(`Last version tag: ${lastVersionTag}`);
 
         // Get hash and date from current head and last version tag
         const lastVersionHashAndDate = await getCommitHashAndDateFromRef({
@@ -113,8 +113,6 @@ async function changelog(options) {
             context: options.context,
             ref: 'refs/heads/dev',
         });
-        console.log(`Last version tag: ${lastVersionHashAndDate}`);
-        console.log(`Current version tag: ${currentVersionHashAndDate}`);
 
         // Retrieve all commits between the two versions
         const commitHashes = await getCommitHashesFromVersionTags({
@@ -123,7 +121,6 @@ async function changelog(options) {
             lastVersionHash: lastVersionHashAndDate.hash,
             currentVersionHash: currentVersionHashAndDate.hash,
         });
-        commitHashes.forEach(sha => console.log(sha));
 
         // Retrieve all merged pull requests that took place in between the commits we've identified
         const pullRequests = await getMergedPullRequestsFromCommitHashes({
@@ -136,6 +133,7 @@ async function changelog(options) {
         pullRequests.forEach((pr)=> console.log(`${pr.title} #${pr.number} [${pr.head.sha}]`));
     } catch (error) {
         console.error("Error:", error.message);
+        return Promise.reject(error);
     }
 }
 
