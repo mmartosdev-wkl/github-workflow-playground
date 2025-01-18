@@ -102,7 +102,7 @@ jobs:
                                 basehead: `${lastReleaseCommit}...${currentReleaseCommit}`,
                             },
                         );
-                        const commitSHAs = compare[0].commits.map((commit)=>{commit.sha}); 
+                        const commitSHAs = compare[0].commits.map((commit)=>{return commit.sha}); 
                         console.log("Commits");
                         commitSHAs.forEach((sha)=>{console.log(sha);});
                         
