@@ -123,7 +123,7 @@ jobs:
                             console.log("Filtering");
                             console.log(pullRequest.merged_at);
                             console.log(pullRequest.head.sha);
-                            console.log(compare[0].commits.includes(pullRequest.head.sha);
+                            console.log(compare[0].commits.includes(pullRequest.head.sha));
                             return pullRequest.merged_at !== null && pullRequest.head.sha !== null && compare[0].commits.includes(pullRequest.head.sha);
                         });
                         console.log("Pull Requests - Filtered");
