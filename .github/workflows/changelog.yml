@@ -102,6 +102,7 @@ jobs:
                                 basehead: `${lastReleaseCommit}...${currentReleaseCommit}`,
                             },
                         );
+                        console.log("Commits");
                         compare[0].commits.forEach((commit)=>{console.log(commit.sha);});
                         
                         // Retrieve all pull requests
@@ -115,10 +116,14 @@ jobs:
                         );
                         
                         // Skip PR that doesn't have a merge_at value and sha is not in the commit list
+                        console.log("Pull Requests - Unfiltered");
+                        pullRequests.forEach((pr)=>{console.log(`${pr.title} #${pr.number} [${pr.head.sha}]`);});
+
                         const filteredPullRequests = pullRequests.filter(pullRequest => {
                             return pullRequest.merged_at && pullRequest.head.sha && compare[0].commits.includes(pullRequest.head.sha);
                         });
-                        filteredPullRequests.forEach((pr)=>{console.log(`${pr.title} #${pr.number}`);});
+                        console.log("Pull Requests - Filtered");
+                        filteredPullRequests.forEach((pr)=>{console.log(`${pr.title} #${pr.number} [${pr.head.sha}]`);});
                 env:
                     LAST_RELEASE_COMMIT: ${{ steps.commits.outputs.last_release_commit }}
                     CURRENT_VERSION_COMMIT: ${{ steps.commits.outputs.current_release_commit }}
