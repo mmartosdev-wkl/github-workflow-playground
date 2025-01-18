@@ -146,7 +146,7 @@ async function createReleaseDraft(params) {
         });
 
         // Update or create a new release draft
-        if (releaseDraftId != null) {
+        if (releaseDraftId !== undefined) {
             await params.github.rest.repos.updateRelease({
                 owner: params.context.repo.owner,
                 repo: params.context.repo.repo,
