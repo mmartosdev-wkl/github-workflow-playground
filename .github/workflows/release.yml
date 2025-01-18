@@ -8,7 +8,6 @@ on:
                 required: false
     pull_request:
         branches:
-#            - 'dev'
             - 'release_*'
         types: [ 'closed' ]
 
@@ -17,53 +16,9 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-#    release_draft:
-#        name: Update release draft
-#        permissions:
-#            contents: write
-#            pull-requests: write
-#        runs-on: ubuntu-latest
-#        steps:
-#            -   name: Check base branch
-#                id: check
-#                run: |
-#                    if [[ "${{ github.event_name }}" == "workflow_dispatch" ]] \
-#                       || [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.base.ref }}" != "dev" ]]; then
-#                        echo "Skipping drafting"
-#                        echo "should_run=false" >> "$GITHUB_OUTPUT"
-#                    else
-#                        echo "should_run=true" >> "$GITHUB_OUTPUT"
-#                    fi
-#
-#            -   name: Checkout codebase
-#                if: steps.check.outputs.should_run == 'true'
-#                uses: actions/checkout@v4
-#                with:
-#                  fetch-depth: 0
-#
-#            -   name: Get version tag
-#                if: steps.check.outputs.should_run == 'true'
-#                id: version_tag
-#                run: |
-#                  VERSION_LINE=$(grep '^versionName=' app/gradle.properties)
-#                  CURRENT_VERSION=${VERSION_LINE#versionName=}
-#                  echo "version_tag=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
-#
-#            -   name: Update release notes
-#                if: steps.check.outputs.should_run == 'true'
-#                uses: release-drafter/release-drafter@v6
-#                env:
-#                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#                with:
-#                  config-name: workflows/releaseDrafter/config.yml
-#                  version: ${{ steps.version_tag.outputs.version_tag }}
-#                  publish: false
-#                  commitish: refs/heads/dev
-
     release:
         name: Release Preparation
         runs-on: ubuntu-latest
-#        needs: release_draft
         permissions:
           contents: write
           pull-requests: write
@@ -153,7 +108,6 @@ jobs:
                     git config user.name "wikiloc-forest"
                     git add app/gradle.properties
                     git commit -m "build: ${{ steps.version_tag.outputs.version_tag }}-${{ steps.bump_version.outputs.version_code }}"
-#                    git tag -a "${{ steps.version_tag.outputs.version_tag }}" -m "Release version ${{ steps.version_tag.outputs.version_tag }}"
 
             -   name: Push Release Branch and Tag
                 run: |
@@ -161,7 +115,6 @@ jobs:
                         git pull origin "${{ steps.create_branch.outputs.new_branch }}" 
                     fi
                     git push origin "${{ steps.create_branch.outputs.new_branch }}"
-#                    git push origin tag "${{ steps.version_tag.outputs.version_tag }}"
 
             -   name: Update dev branch
                 run: |
@@ -222,15 +175,20 @@ jobs:
                     fi
                     git push origin dev
 
-            -   name: Publish release notes
+            -   name: Publish release draft
                 if: github.ref_name == 'dev'
-                uses: release-drafter/release-drafter@v6
-                env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                uses: actions/github-script@v7
                 with:
-                  config-name: workflows/releaseDrafter/config.yml
-                  version: ${{ steps.version_tag.outputs.version_tag }}
-                  publish: true
+                    script: |
+                        const changelog = require('.github/workflows/changelog/changelog.js')
+                        await changelog.publishReleaseDraft({
+                            github: github,
+                            context: context,
+                            tagName: process.env.CURRENT_VERSION_TAG,
+                        });
+                env:
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                    CURRENT_VERSION_TAG: ${{ steps.version_tag.outputs.version_tag }}
 
 #            -   name: Create GitHub Release
 #                uses: softprops/action-gh-release@v1

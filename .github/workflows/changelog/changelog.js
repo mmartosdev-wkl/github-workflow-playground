@@ -1,15 +1,5 @@
 const MarkdownReport = require('./markdownReport');
 
-async function getCommitHashFromRef(params) {
-    const { data: commit } = await params.github.rest.repos.getCommit({
-        owner: params.context.repo.owner,
-        repo: params.context.repo.repo,
-        ref: params.ref,
-    });
-    console.log(commit);
-    return commit.sha;
-}
-
 async function getCommitHashAndDateFromRef(params) {
     const { data: commit } = await params.github.rest.repos.getCommit({
         owner: params.context.repo.owner,
@@ -60,7 +50,7 @@ async function getReleaseDraftId(params) {
             repo: params.context.repo.repo,
         },
         (response, done) => {
-            if (response.data.some(release => release.tag_name === params.tagName && release.draft)) {
+            if (response.data.some(release => release.draft)) {
                 done();
             }
             return response.data;
@@ -106,13 +96,7 @@ async function getMergedPullRequestsFromCommitHashes(params) {
     return pullRequests.filter(pullRequest => pullRequest.merged_at !== null && pullRequest.head.sha !== null && params.commitHashes.includes(pullRequest.head.sha));
 }
 
-/**
- * Input params:
- * params.github
- * params.context
- * params.tagName
- */
-async function changelog(params) {
+async function createReleaseDraft(params) {
     try {
         // Look for previous release cut
         const lastVersionTag = await getLastVersionTag({
@@ -159,7 +143,6 @@ async function changelog(params) {
         const releaseDraftId = await getReleaseDraftId({
             github: params.github,
             context: params.context,
-            tagName: params.tagName,
         });
 
         // Update or create a new release draft
@@ -184,13 +167,34 @@ async function changelog(params) {
             });
         }
     } catch (error) {
-        console.error("Error:", error.message);
         return Promise.reject(error);
     }
 }
 
+async function publishReleaseDraft(params) {
+    try {
+        // Get release draft id
+        const releaseDraftId = await getReleaseDraftId({
+            github: params.github,
+            context: params.context,
+        });
+
+        // Publish the release draft
+        if (releaseDraftId != null) {
+            await params.github.rest.repos.updateRelease({
+                owner: params.context.repo.owner,
+                repo: params.context.repo.repo,
+                release_id: releaseDraftId,
+                tag_name: params.tagName,
+                draft: false,
+            });
+        }
+    } catch (error) {
+        return Promise.reject(error);
+    }
+}
 
 module.exports = {
-    getCommitHashFromRef: getCommitHashFromRef,
-    changelog: changelog,
+    createReleaseDraft: createReleaseDraft,
+    publishReleaseDraft: publishReleaseDraft,
 };
