@@ -42,7 +42,7 @@ async function getLastVersionTag(params) {
 }
 
 async function getReleaseDraftId(params) {
-    // Retrieve releases till any release matches with the regex
+    // Look for first release tagged as draft
     const releases = await params.github.paginate(
         params.github.rest.repos.listReleases,
         {
@@ -56,10 +56,7 @@ async function getReleaseDraftId(params) {
             return response.data;
         }
     );
-
-    // Look for the release that matches with the regex
     const lastRelease = releases.find(release => release.draft);
-
     return (lastRelease !== undefined) ? lastRelease.id : undefined;
 }
 
@@ -195,7 +192,65 @@ async function publishReleaseDraft(params) {
     }
 }
 
+async function publishRelease(params) {
+    try {
+        // Get hash and date from old and current version tags
+        const lastVersionHashAndDate = await getCommitHashAndDateFromRef({
+            github: params.github,
+            context: params.context,
+            ref: `refs/tags/${oldTagName}`,
+        });
+        const currentVersionHashAndDate = await getCommitHashAndDateFromRef({
+            github: params.github,
+            context: params.context,
+            ref: `refs/tags/${tagName}`,
+        });
+
+        // Retrieve all commits between the two versions
+        const commitHashes = await getCommitHashesFromVersionTags({
+            github: params.github,
+            context: params.context,
+            lastVersionHash: lastVersionHashAndDate.hash,
+            currentVersionHash: currentVersionHashAndDate.hash,
+        });
+
+        // Retrieve all merged pull requests that took place in between the commits we've identified
+        const pullRequests = await getMergedPullRequestsFromCommitHashes({
+            github: params.github,
+            context: params.context,
+            lastVersionHashAndDate: lastVersionHashAndDate,
+            currentVersionHashAndDate: currentVersionHashAndDate,
+            commitHashes: commitHashes,
+        });
+
+        // Create report
+        const report = new MarkdownReport(`Version ${params.tagName}`);
+        report.addSection('What\'s Changed');
+        report.addList(pullRequests.map(pullRequest => `${pullRequest.title} by @${pullRequest.user.login} #${pullRequest.number}`));
+        report.addText(`Full changelog: ${params.context.payload.repository.html_url}/compare/${lastVersionHashAndDate.hash}...${currentVersionHashAndDate.hash}`);
+
+        // Get release draft id
+        const releaseDraftId = await getReleaseDraftId({
+            github: params.github,
+            context: params.context,
+        });
+
+        // Update or create a new release draft
+        await params.github.rest.repos.createRelease({
+            owner: params.context.repo.owner,
+            repo: params.context.repo.repo,
+            tag_name: params.tagName,
+            name: params.tagName,
+            body: report.generate(),
+            draft: false,
+        });
+    } catch (error) {
+        return Promise.reject(error);
+    }
+}
+
 module.exports = {
     createReleaseDraft: createReleaseDraft,
     publishReleaseDraft: publishReleaseDraft,
+    publishRelease: publishRelease,
 };
