@@ -126,7 +126,8 @@ async function changelog(options) {
             commitHashes: commitHashes,
         });
 
-        console.log(options.context.repo);
+        console.log(options.context);
+        console.log(options.github);
         
         // Create report
         const report = new MarkdownReport(`Version ${options.tagName}`);
