@@ -50,8 +50,8 @@ async function getReleaseDraftId(params) {
             repo: params.context.repo.repo,
         },
         (response, done) => {
-            console.log(response.data);
-            response.data.forEach(release => console.log(release.draft + " - " + release.draft === 'true'));
+            const t = response.data.some(release => release.draft);
+            console.log(t);
             if (response.data.some(release => console.log(release))) {
                 done();
             }
