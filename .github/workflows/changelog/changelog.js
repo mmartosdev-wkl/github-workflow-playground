@@ -68,7 +68,7 @@ async function getCommitHashesFromVersionTags(options) {
 }
 
 async function getMergedPullRequestsFromCommitHashes(options) {
-    const lastVersionDate = new Date(lastVersionHashAndDate.date);
+    const lastVersionDate = new Date(options.lastVersionHashAndDate.date);
     const pullRequests = await options.github.paginate(
         options.github.rest.pulls.list,
         {
