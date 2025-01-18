@@ -207,7 +207,6 @@ async function createRelease(params) {
       commitHashes,
       baseRef: 'dev',
     });
-    console.log(pullRequests);
 
     // Build the Markdown release body.
     const report = new MarkdownReport(`Version ${params.tagName}`);
