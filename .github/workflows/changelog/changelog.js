@@ -131,12 +131,10 @@ async function changelog(options) {
             commitHashes: commitHashes,
         });
         
-        pullRequests.map((pullRequest)=> `${pullRequest.title} by @${pullRequest.user.login} #${pullRequest.number}`);
-
         // Create report
         const report = new MarkdownReport(options.tagName);
         report.addSection('What\'s Changed');
-        report.addList(pullRequests.map((pullRequest)=> `${pullRequest.title} by @${pullRequest.user.login} #${pullRequest.number}`));
+        report.addList(pullRequests.map(pullRequest => `${pullRequest.title} by @${pullRequest.user.login} #${pullRequest.number}`));
         console.log(report.generate());
     } catch (error) {
         console.error("Error:", error.message);
