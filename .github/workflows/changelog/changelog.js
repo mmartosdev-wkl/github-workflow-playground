@@ -22,6 +22,7 @@ async function getLastVersionTag(options) {
             repo: options.context.repo.repo,
         },
         (response, done) => {
+            console.log("paginate");
             if (response.data.some(release => release.tag_name.match(regex) !== null)) {
                 done();
             }
@@ -48,12 +49,32 @@ async function getLastVersionTag(options) {
  * options.tagName
  */
 async function changelog(options) {
-    // Look for previous release cut
-    const lastVersionTag = await getLastVersionTag({
-        github: options.github,
-        context: options.context,
-    });
-    console.log(`Last version tag: ${lastVersionTag}`);
+    try {
+        // Look for previous release cut
+        const lastVersionTag = await getLastVersionTag({
+            github: options.github,
+            context: options.context,
+        });
+        console.log(`Last version tag: ${lastVersionTag}`);
+
+        // Get hash and date from current head and last version tag
+        const lastVersionHash = await getCommitHashFromRef({
+            github: options.github,
+            context: options.context,
+            ref: `refs/tags/${lastVersionTag}`,
+        });
+        const currentVersionHash = await getCommitHashFromRef({
+            github: options.github,
+            context: options.context,
+            ref: 'refs/heads/dev',
+        });
+        console.log(`Last version tag: ${lastVersionHash}`);
+        console.log(`Current version tag: ${currentVersionHash}`);
+
+
+    } catch (error) {
+        console.error("Error:", error.message);
+    }
 }
 
 
