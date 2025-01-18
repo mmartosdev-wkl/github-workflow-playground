@@ -30,7 +30,7 @@ jobs:
                     CURRENT_VERSION_TAG=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
                     echo "version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
 
-            -   name: Unified
+            -   name: Create release draft with proper changelog
                 id: unified
                 uses: actions/github-script@v7
                 with:
