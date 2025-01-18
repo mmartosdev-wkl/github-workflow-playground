@@ -79,8 +79,8 @@ jobs:
                         })
                         core.setOutput("last_release_commit", lastReleaseCommit.sha);
                         core.setOutput("current_release_commit", currentReleaseCommit.sha);
-                        console.log(last_release_commit.sha);
-                        console.log(current_release_commit.sha);
+                        console.log(lastReleaseCommit.sha);
+                        console.log(currentReleaseCommit.sha);
                 env:
                     LAST_VERSION_TAG: ${{ steps.last_release.outputs.version_tag }}
                     CURRENT_VERSION_TAG: ${{ steps.current_release.outputs.version_tag }}
