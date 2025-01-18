@@ -10,7 +10,6 @@ async function getCommitHashFromRef(options) {
     return commit.sha;
 }
 
-
 async function getCommitHashAndDateFromRef(options) {
     const { data: commit } = await options.github.rest.repos.getCommit({
         owner: options.context.repo.owner,
@@ -23,9 +22,6 @@ async function getCommitHashAndDateFromRef(options) {
     };
 }
 
-
-
-
 async function getLastVersionTag(options) {
     const regex = /^\d+\.\d+\.0$/;
 
@@ -37,7 +33,6 @@ async function getLastVersionTag(options) {
             repo: options.context.repo.repo,
         },
         (response, done) => {
-            console.log(response.data);
             if (response.data.some(release => release.tag_name.match(regex) !== null && !release.draft)) {
                 done();
             }
