@@ -1,4 +1,4 @@
-function getCommitHashFromRef(
+async function getCommitHashFromRef(
     github,
     context,
     ref
