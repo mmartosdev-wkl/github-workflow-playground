@@ -126,14 +126,14 @@ async function changelog(options) {
             commitHashes: commitHashes,
         });
 
-        console.log(options.context);
+        console.log(options.context.payload.repository.html_url);
         console.log(options.github);
         
         // Create report
         const report = new MarkdownReport(`Version ${options.tagName}`);
         report.addSection('What\'s Changed');
         report.addList(pullRequests.map(pullRequest => `${pullRequest.title} by @${pullRequest.user.login} #${pullRequest.number}`));
-        report.addText(`Full changelog: https://github.com/mmartosdev-wkl/github-workflow-playground/compare/${lastVersionHashAndDate.hash}...${currentVersionHashAndDate.hash}`);
+        report.addText(`Full changelog: ${options.context.payload.repository.html_url}/compare/${lastVersionHashAndDate.hash}...${currentVersionHashAndDate.hash}`);
 
         // Create release
         await options.github.rest.repos.createRelease({
