@@ -36,7 +36,7 @@ jobs:
                 with:
                     script: |
                         const changelog = require('.github/workflows/changelog/changelog.js')
-                        await changelog.changelog({
+                        await changelog.createReleaseDraft({
                             github: github,
                             context: context,
                             tagName: process.env.CURRENT_VERSION_TAG,
