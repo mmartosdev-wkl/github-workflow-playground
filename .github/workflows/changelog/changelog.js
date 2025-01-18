@@ -51,7 +51,7 @@ async function getReleaseDraftId(params) {
         },
         (response, done) => {
             console.log(response.data);
-            if (response.data.some(release => release.draft)) {
+            if (response.data.some(release => release.draft === 'true')) {
                 done();
             }
             return response.data;
