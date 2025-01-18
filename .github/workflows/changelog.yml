@@ -68,7 +68,7 @@ jobs:
                         const currentVersionTag = process.env.CURRENT_VERSION_TAG;
                         const changelog = require('.github/workflows/changelog/changelog.js')
                         
-                        const res = changelog.getCommitHashFromRef(
+                        const res = await changelog.getCommitHashFromRef(
                             github,
                             context,
                             `refs/tags/${lastVersionTag}`,
