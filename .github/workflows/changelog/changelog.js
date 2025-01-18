@@ -178,9 +178,10 @@ async function publishReleaseDraft(params) {
             github: params.github,
             context: params.context,
         });
+        console.log("releaseDraftId -> " + releaseDraftId)
 
         // Publish the release draft
-        if (releaseDraftId != null) {
+        if (releaseDraftId !== undefined) {
             await params.github.rest.repos.updateRelease({
                 owner: params.context.repo.owner,
                 repo: params.context.repo.repo,
