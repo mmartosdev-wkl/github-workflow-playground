@@ -11,7 +11,7 @@ async function getCommitHashFromRef(options) {
 }
 
 
-async function lastVersionTag(options) {
+async function getLastVersionTag(options) {
     const regex = /^\d+\.\d+\.0$/;
 
     // Retrieve releases till any release matches with the regex
@@ -49,7 +49,7 @@ async function lastVersionTag(options) {
  */
 async function changelog(options) {
     // Look for previous release cut
-    const lastVersionTag = lastVersionTag({
+    const lastVersionTag = await getLastVersionTag({
         github: options.github,
         context: options.context,
     });
