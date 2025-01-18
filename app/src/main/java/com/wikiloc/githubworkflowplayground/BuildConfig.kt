@@ -11,3 +11,7 @@ data class BuildConfig(
 data class Variant(
   val name: String,
 )
+
+data class Track(
+  val eventName: String,
+)
