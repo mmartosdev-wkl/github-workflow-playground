@@ -94,7 +94,7 @@ jobs:
                         const currentReleaseCommit = process.env.CURRENT_VERSION_COMMIT;
                         
                         // Retrieve all commits between the two versions
-                        const commits = await github.paginate(
+                        const compare = await github.paginate(
                             github.rest.repos.compareCommitsWithBasehead,
                             {
                                 owner: context.repo.owner,
@@ -102,7 +102,7 @@ jobs:
                                 basehead: `${lastReleaseCommit}...${currentReleaseCommit}`,
                             },
                         );
-                        commits.forEach((commit)=>{console.log(commit.sha);});
+                        compare.commits.forEach((commit)=>{console.log(commit.sha);});
                 env:
                     LAST_RELEASE_COMMIT: ${{ steps.commits.outputs.last_release_commit }}
                     CURRENT_VERSION_COMMIT: ${{ steps.commits.outputs.current_release_commit }}
