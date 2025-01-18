@@ -93,7 +93,7 @@ async function getMergedPullRequestsFromCommitHashes(params) {
     return pullRequests.filter(pullRequest => pullRequest.merged_at !== null && pullRequest.head.sha !== null && params.commitHashes.includes(pullRequest.head.sha) && pullRequest.base.ref === params.baseRef);
 }
 
-async function createReleaseDraft(params) {
+async function createRelease(params) {
     try {
         // Look for previous release cut
         const lastVersionTag = await getLastVersionTag({
@@ -153,7 +153,7 @@ async function createReleaseDraft(params) {
                 tag_name: params.tagName,
                 name: params.tagName,
                 body: report.generate(),
-                draft: true,
+                draft: params.draft,
             });
         } else {
             await params.github.rest.repos.createRelease({
@@ -162,7 +162,7 @@ async function createReleaseDraft(params) {
                 tag_name: params.tagName,
                 name: params.tagName,
                 body: report.generate(),
-                draft: true,
+                draft: params.draft,
             });
         }
     } catch (error) {
@@ -264,7 +264,7 @@ async function publishRelease(params) {
 }
 
 module.exports = {
-    createReleaseDraft: createReleaseDraft,
+    createRelease: createRelease,
     publishReleaseDraft: publishReleaseDraft,
     publishRelease: publishRelease,
 };
