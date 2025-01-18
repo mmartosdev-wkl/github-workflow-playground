@@ -114,11 +114,11 @@ jobs:
                             },
                         );
                         
-                        // Skip PR that doesn't have a merge_at value
+                        // Skip PR that doesn't have a merge_at value and sha is not in the commit list
                         const filteredPullRequests = pullRequests.filter(pullRequest => {
-                            return pullRequest.merged_at !== null;
+                            return pullRequest.merged_at && pullRequest.merge_commit_sha && compare[0].commits.includes(pullRequest.merge_commit_sha);
                         });
-                        filteredPullRequests.forEach((pr)=>{console.log(`${pr.title} #${pr.id}`);});
+                        filteredPullRequests.forEach((pr)=>{console.log(`${pr.title} #${pr.number}`);});
                 env:
                     LAST_RELEASE_COMMIT: ${{ steps.commits.outputs.last_release_commit }}
                     CURRENT_VERSION_COMMIT: ${{ steps.commits.outputs.current_release_commit }}
