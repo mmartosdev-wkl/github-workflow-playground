@@ -45,6 +45,7 @@ async function getLastVersionTag(options) {
 
     // Return success or reject
     if (lastRelease !== undefined) {
+        console.log(lastRelease);
         return lastRelease.tag_name;    
     } else {
         return Promise.reject(new Error("Couldn't identify last relase"));
@@ -126,9 +127,6 @@ async function changelog(options) {
             commitHashes: commitHashes,
         });
 
-        console.log(options.context.payload.repository.html_url);
-        console.log(options.github);
-        
         // Create report
         const report = new MarkdownReport(`Version ${options.tagName}`);
         report.addSection('What\'s Changed');
