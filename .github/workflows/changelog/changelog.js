@@ -129,6 +129,7 @@ async function createReleaseDraft(params) {
             currentVersionHashAndDate: currentVersionHashAndDate,
             commitHashes: commitHashes,
         });
+        console.log(pullRequests);
 
         // Create report
         const report = new MarkdownReport(`Version ${params.tagName}`);
