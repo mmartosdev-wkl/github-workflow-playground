@@ -218,12 +218,6 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
   const labelCategories = ['bug', 'feature', 'refactor', 'ci'];
   const classifiedPullRequests = classifyPullRequestByLabels(pullRequests, labelCategories);
 
-  console.log(classifiedPullRequests.remaining.length);
-  console.log(classifiedPullRequests.bug.length);
-  console.log(classifiedPullRequests.feature.length);
-  console.log(classifiedPullRequests.refactor.length);
-  console.log(classifiedPullRequests.ci.length);
-
   // 1. Remaining
   if (classifiedPullRequests.remaining.length !== 0) {
     report.addSection("What's Changed");
@@ -232,7 +226,6 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
         (pr) => `${pr.title} by @${pr.user.login} in #${pr.number}`
       )
     );
-    report.addText(`\n\n`);
   }
 
   // 2. Bugs
@@ -243,7 +236,6 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
         (pr) => `${pr.title} by @${pr.user.login} in #${pr.number}`
       )
     );
-    report.addText(`\n\n`);
   }
 
   // 3. Features
@@ -254,7 +246,6 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
         (pr) => `${pr.title} by @${pr.user.login} in #${pr.number}`
       )
     );
-    report.addText(`\n\n`);
   }
 
   // 4. Refactors
@@ -265,7 +256,6 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
         (pr) => `${pr.title} by @${pr.user.login} in #${pr.number}`
       )
     );
-    report.addText(`\n\n`);
   }
 
   // 5. CI
@@ -276,7 +266,6 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
         (pr) => `${pr.title} by @${pr.user.login} in #${pr.number}`
       )
     );
-    report.addText(`\n\n`);
   }
 
   // Full changelog link
