@@ -4,7 +4,7 @@ on:
     workflow_dispatch:
         inputs:
             version_tag:
-                description: 'New version tag (eg: 3.45.2). Leave empty for auto-increment.'
+                description: 'New version tag (e.g.: 3.45.2). Leave empty for auto-increment.'
                 required: false
     pull_request:
         branches:
@@ -63,6 +63,10 @@ jobs:
                   GITHUB_REF_NAME: ${{ github.ref_name }}
               run: |
                   CURRENT_VERSION_TAG=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
+                  if [ -z "$CURRENT_VERSION_TAG" ]; then
+                    echo "Error: Could not find 'versionName' in app/gradle.properties."
+                    exit 1
+                  fi
                   
                   # Pull Request merged
                   if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
@@ -126,7 +130,6 @@ jobs:
 
             - name: Push Release Branch
               run: |
-                  # If this workflow was triggered by a merged PR, pull the branch before pushing
                   if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
                     git pull origin "${{ steps.create_branch.outputs.new_branch }}" 
                   fi
@@ -134,13 +137,17 @@ jobs:
 
             - name: Update dev branch
               run: |
+                  # 1. Switch to dev
                   git checkout dev
-                  CURRENT_DEV_VERSION_TAG=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
                   
-                  # Merge the release branch into dev
+                  # 2. Save dev's version before merge
+                  DEV_VERSION_BEFORE=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
+                  CODE_BEFORE=$(grep '^versionCode=' app/gradle.properties | cut -d'=' -f2)
+                  
+                  # 3. Merge release branch changes
                   git merge "${{ steps.create_branch.outputs.new_branch }}" --no-ff || true
                   
-                  # If there's a conflict, handle it
+                  # 4. If there's a conflict, handle it
                   if [ -n "$(git ls-files -u)" ]; then
                     echo "Merge conflict detected!"
                     CONFLICT_FILES=$(git ls-files -u | cut -f2 | sort | uniq)
@@ -158,24 +165,29 @@ jobs:
                     fi
                   fi
                   
-                  # Now decide how to bump dev version
-                  # (We only treat it differently if we're currently on 'dev' in this job,
-                  #  but we've just checked out dev, so we know we are on dev.)
+                  # 5. Check if version changed; only bump dev if it has NOT changed
+                  DEV_VERSION_AFTER=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
+                  CODE_AFTER=$(grep '^versionCode=' app/gradle.properties | cut -d'=' -f2)
                   
-                  CURRENT_VERSION_CODE=$(grep '^versionCode=' app/gradle.properties | cut -d'=' -f2)
+                  # If dev's version is still the same as before the merge, do a minor bump
+                  if [ "$DEV_VERSION_BEFORE" = "$DEV_VERSION_AFTER" ]; then
+                    echo "Version in dev did not change after merging; bumping dev minor version."
                   
-                  # Minor bump on dev
-                  IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_DEV_VERSION_TAG"
-                  NEW_MINOR=$((MINOR + 1))
-                  NEW_PATCH=0
-                  NEW_VERSION_TAG="$MAJOR.$NEW_MINOR.$NEW_PATCH"
-                  NEW_VERSION_CODE=$((CURRENT_VERSION_CODE + 1))
+                    IFS='.' read -r MAJOR MINOR PATCH <<< "$DEV_VERSION_AFTER"
+                    NEW_MINOR=$((MINOR + 1))
+                    NEW_PATCH=0
+                    NEW_VERSION="${MAJOR}.${NEW_MINOR}.${NEW_PATCH}"
+                    NEW_CODE=$((CODE_AFTER + 1))
                   
-                  sed -i "s/^versionName=.*/versionName=${NEW_VERSION_TAG}/" app/gradle.properties
-                  sed -i "s/^versionCode=.*/versionCode=${NEW_VERSION_CODE}/" app/gradle.properties
-                  git add app/gradle.properties
-                  git commit -m "Bump version: $NEW_VERSION_TAG-$NEW_VERSION_CODE" || echo "No changes to commit."
+                    sed -i "s/^versionName=.*/versionName=${NEW_VERSION}/" app/gradle.properties
+                    sed -i "s/^versionCode=.*/versionCode=${NEW_CODE}/" app/gradle.properties
+                    git add app/gradle.properties
+                    git commit -m "Bump version: ${NEW_VERSION}-${NEW_CODE}" || echo "No changes to commit."
+                  else
+                    echo "Dev version changed due to merge; skipping minor bump."
+                  fi
                   
+                  # 6. Push dev
                   git push origin dev
 
             - name: Publish release draft (for dev)
