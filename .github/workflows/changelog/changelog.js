@@ -232,6 +232,7 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
         (pr) => `${pr.title} by @${pr.user.login} in #${pr.number}`
       )
     );
+    report.addText(`\n\n`);
   }
 
   // 2. Bugs
@@ -242,6 +243,7 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
         (pr) => `${pr.title} by @${pr.user.login} in #${pr.number}`
       )
     );
+    report.addText(`\n\n`);
   }
 
   // 3. Features
@@ -252,6 +254,7 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
         (pr) => `${pr.title} by @${pr.user.login} in #${pr.number}`
       )
     );
+    report.addText(`\n\n`);
   }
 
   // 4. Refactors
@@ -262,6 +265,7 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
         (pr) => `${pr.title} by @${pr.user.login} in #${pr.number}`
       )
     );
+    report.addText(`\n\n`);
   }
 
   // 5. CI
@@ -272,6 +276,7 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
         (pr) => `${pr.title} by @${pr.user.login} in #${pr.number}`
       )
     );
+    report.addText(`\n\n`);
   }
 
   // Full changelog link
