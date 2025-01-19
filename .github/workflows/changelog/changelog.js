@@ -40,7 +40,7 @@ async function getLastVersionTag({ github, context }) {
       repo: context.repo.repo,
     },
     (response, done) => {
-      // Stop paginating once we find a matching release (non-draft).
+      // Stop paginating once we find a matching non-draft release.
       if (response.data.some((release) => regex.test(release.tag_name) && !release.draft)) {
         done();
       }
@@ -52,7 +52,6 @@ async function getLastVersionTag({ github, context }) {
   // the first match from the top of the list, effectively giving us the
   // most recent.
   const lastRelease = releases.find((release) => regex.test(release.tag_name) && !release.draft);
-
   if (!lastRelease) {
     throw new Error("Couldn't identify last release");
   }
@@ -97,14 +96,12 @@ async function getReleaseDraftId({ github, context }) {
  * @returns {Promise<string[]>} - An array of commit SHAs.
  */
 async function getCommitHashesFromVersionTags({ github, context, lastVersionHash, currentVersionHash }) {
-  // compareCommitsWithBasehead is not inherently paginated, so we can call it directly.
   const compareResponse = await github.rest.repos.compareCommitsWithBasehead({
     owner: context.repo.owner,
     repo: context.repo.repo,
     basehead: `${lastVersionHash}...${currentVersionHash}`,
   });
 
-  // The commits are in compareResponse.data.commits
   const { commits } = compareResponse.data;
   return commits.map((commit) => commit.sha);
 }
@@ -120,7 +117,7 @@ async function getCommitHashesFromVersionTags({ github, context, lastVersionHash
  * @param {Object} params.github - GitHub REST API object.
  * @param {Object} params.context - GitHub Actions context.
  * @param {Object} params.lastVersionHashAndDate - Contains `hash` and `date` for the previous version.
- * @param {Object} params.currentVersionHashAndDate - Contains `hash` and `date` for the current version (unused here but included for extension).
+ * @param {Object} params.currentVersionHashAndDate - Contains `hash` and `date` for the current version.
  * @param {string[]} params.commitHashes - An array of commit SHAs between the old and new versions.
  * @param {string} params.baseRef - The reference branch to which PRs were merged.
  * @returns {Promise<Object[]>} - An array of pull request objects.
@@ -141,48 +138,190 @@ async function getMergedPullRequestsFromCommitHashes({
       owner: context.repo.owner,
       repo: context.repo.repo,
       state: 'closed',
-      // Optionally, we can add 'per_page: 100' or similar for fewer calls if needed
+      // optionally: per_page: 100
     },
     (response, done) => {
       // Filter out PRs that were created before the last release date.
-      const filtered = response.data.filter((pullRequest) => new Date(pullRequest.created_at) > lastVersionDate);
+      const filtered = response.data.filter(
+        (pullRequest) => new Date(pullRequest.created_at) > lastVersionDate
+      );
       if (filtered.length === 0) {
         // If this page has no relevant PRs, we can assume subsequent pages won't either
-        // if the data is sorted from newest to oldest. (Though this assumption depends on sorting.)
+        // if the data is sorted from newest to oldest.
         done();
       }
       return filtered;
     }
   );
 
-  // Return only those PRs that are merged, have a head SHA in our commit list,
-  // and target the specified baseRef.
+  // Only return PRs that:
+  //  - are merged (pr.merged_at !== null)
+  //  - have a head SHA in our commit list
+  //  - target the specified baseRef.
   return pullRequests.filter(
-    (pr) => pr.merged_at !== null && pr.head?.sha && commitHashes.includes(pr.head.sha) && pr.base.ref === baseRef
+    (pr) =>
+      pr.merged_at !== null &&
+      pr.head?.sha &&
+      commitHashes.includes(pr.head.sha) &&
+      pr.base.ref === baseRef
   );
 }
 
 /**
- * Utility to build a Markdown release body from a list of pull requests.
- * @param {string} versionLabel - Version label (e.g., "Version 1.2.3")
+ * Classifies pull requests by matching label names.
+ *
+ * @param {Object[]} pullRequests - An array of pull request objects.
+ * @param {string[]} labels - Array of label names to classify.
+ * @returns {Object} - An object with keys for each label plus "remaining" for unmatched PRs.
+ */
+function classifyPullRequestByLabels(pullRequests, labels) {
+  const classified = {};
+  labels.forEach((label) => {
+    classified[label] = [];
+  });
+  classified.remaining = [];
+
+  pullRequests.forEach((pr) => {
+    // GitHub PR labels are objects with a 'name' property, not raw strings
+    const labelNames = pr.labels.map((labelObj) => labelObj.name);
+    let isLabeled = false;
+
+    labels.forEach((label) => {
+      if (labelNames.includes(label)) {
+        classified[label].push(pr);
+        isLabeled = true;
+      }
+    });
+
+    if (!isLabeled) {
+      classified.remaining.push(pr);
+    }
+  });
+
+  return classified;
+}
+
+/**
+ * Builds a Markdown release body from classified pull requests.
+ *
+ * @param {string} versionLabel - Version label (e.g., "Version 1.2.3").
  * @param {Object[]} pullRequests - Array of PR objects.
- * @param {string} repoUrl - Repository URL.
- * @param {string} fromHash - The older commit SHA.
- * @param {string} toHash - The newer commit SHA.
- * @returns {string} - The assembled Markdown body.
+ * @param {string} repoUrl - Repository HTML URL.
+ * @param {string} fromHash - Older commit SHA.
+ * @param {string} toHash - Newer commit SHA.
+ * @returns {string} - A Markdown-formatted release body.
  */
 function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash) {
   const report = new MarkdownReport(versionLabel);
-  report.addSection("What's Changed");
-  report.addList(
-    pullRequests.map((pr) => `${pr.title} by @${pr.user.login} #${pr.number}`)
-  );
+
+  // Example categories you can tweak as needed
+  const labelCategories = ['bug', 'feature', 'refactor', 'ci'];
+  const classifiedPullRequests = classifyPullRequestByLabels(pullRequests, labelCategories);
+
+  // 1. Remaining
+  if (classifiedPullRequests.remaining.length !== 0) {
+    report.addSection("What's Changed");
+    report.addList(
+      classifiedPullRequests.remaining.map(
+        (pr) => `${pr.title} by @${pr.user.login} #${pr.number}`
+      )
+    );
+  }
+
+  // 2. Bugs
+  if (classifiedPullRequests.bug.length !== 0) {
+    report.addSection('🐛 Bug Fixes');
+    report.addList(
+      classifiedPullRequests.bug.map(
+        (pr) => `${pr.title} by @${pr.user.login} #${pr.number}`
+      )
+    );
+  }
+
+  // 3. Features
+  if (classifiedPullRequests.feature.length !== 0) {
+    report.addSection('🚀 Features');
+    report.addList(
+      classifiedPullRequests.feature.map(
+        (pr) => `${pr.title} by @${pr.user.login} #${pr.number}`
+      )
+    );
+  }
+
+  // 4. Refactors
+  if (classifiedPullRequests.refactor.length !== 0) {
+    report.addSection('🧹 Refactor');
+    report.addList(
+      classifiedPullRequests.refactor.map(
+        (pr) => `${pr.title} by @${pr.user.login} #${pr.number}`
+      )
+    );
+  }
+
+  // 5. CI
+  if (classifiedPullRequests.ci.length !== 0) {
+    report.addSection('🤖 CI');
+    report.addList(
+      classifiedPullRequests.ci.map(
+        (pr) => `${pr.title} by @${pr.user.login} #${pr.number}`
+      )
+    );
+  }
+
+  // Full changelog link
   report.addText(`Full changelog: ${repoUrl}/compare/${fromHash}...${toHash}`);
+
   return report.generate();
 }
 
 /**
- * Creates or updates a draft release with the specified tag name, pulling changes from the last known version.
+ * Internal helper to gather commits and pull requests between two references.
+ * @param {Object} github - GitHub REST API object.
+ * @param {Object} context - GitHub Actions context.
+ * @param {string} fromRef - Reference for the older version/tag (e.g., `refs/tags/1.2.0`).
+ * @param {string} toRef - Reference for the newer version/branch (e.g., `refs/heads/dev`).
+ * @param {string} baseRef - The branch to which PRs were merged (e.g., `dev`).
+ * @returns {Promise<{lastVersionHashAndDate: Object, currentVersionHashAndDate: Object, commitHashes: string[], pullRequests: Object[]}>}
+ */
+async function gatherPullRequestsBetweenRefs(github, context, fromRef, toRef, baseRef) {
+  const lastVersionHashAndDate = await getCommitHashAndDateFromRef({
+    github,
+    context,
+    ref: fromRef,
+  });
+  const currentVersionHashAndDate = await getCommitHashAndDateFromRef({
+    github,
+    context,
+    ref: toRef,
+  });
+
+  const commitHashes = await getCommitHashesFromVersionTags({
+    github,
+    context,
+    lastVersionHash: lastVersionHashAndDate.hash,
+    currentVersionHash: currentVersionHashAndDate.hash,
+  });
+
+  const pullRequests = await getMergedPullRequestsFromCommitHashes({
+    github,
+    context,
+    lastVersionHashAndDate,
+    currentVersionHashAndDate,
+    commitHashes,
+    baseRef,
+  });
+
+  return {
+    lastVersionHashAndDate,
+    currentVersionHashAndDate,
+    commitHashes,
+    pullRequests,
+  };
+}
+
+/**
+ * Creates or updates a draft release with the specified tag name,
+ * pulling changes from the last known `x.y.0` version to `dev`.
  *
  * @param {Object} params
  * @param {Object} params.github - GitHub REST API object.
@@ -192,76 +331,52 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
  * @returns {Promise<void>}
  */
 async function createRelease({ github, context, tagName, isDraft }) {
-  try {
-    // Find the previous release that matches something like x.y.0
-    const lastVersionTag = await getLastVersionTag({ github, context });
+  // 1. Find last version tag that matches x.y.0
+  const lastVersionTag = await getLastVersionTag({ github, context });
 
-    // Retrieve commit/date info for the last version and the current dev branch
-    const lastVersionHashAndDate = await getCommitHashAndDateFromRef({
+  // 2. Gather commits and PRs from lastVersionTag -> dev
+  const { lastVersionHashAndDate, currentVersionHashAndDate, pullRequests } =
+    await gatherPullRequestsBetweenRefs(
       github,
       context,
-      ref: `refs/tags/${lastVersionTag}`,
-    });
-    const currentVersionHashAndDate = await getCommitHashAndDateFromRef({
-      github,
-      context,
-      ref: 'refs/heads/dev',
-    });
-
-    // Retrieve commits between the two versions
-    const commitHashes = await getCommitHashesFromVersionTags({
-      github,
-      context,
-      lastVersionHash: lastVersionHashAndDate.hash,
-      currentVersionHash: currentVersionHashAndDate.hash,
-    });
-
-    // Get the merged PRs that match these commits
-    const pullRequests = await getMergedPullRequestsFromCommitHashes({
-      github,
-      context,
-      lastVersionHashAndDate,
-      currentVersionHashAndDate,
-      commitHashes,
-      baseRef: 'dev',
-    });
-
-    // Build the release body markdown
-    const body = buildReleaseBody(
-      `Version ${tagName}`,
-      pullRequests,
-      context.payload.repository.html_url,
-      lastVersionHashAndDate.hash,
-      currentVersionHashAndDate.hash
+      `refs/tags/${lastVersionTag}`,
+      'refs/heads/dev',
+      'dev'
     );
 
-    // Check for an existing draft release
-    const releaseDraftId = await getReleaseDraftId({ github, context });
+  // 3. Build the release body
+  const body = buildReleaseBody(
+    `Version ${tagName}`,
+    pullRequests,
+    context.payload.repository.html_url,
+    lastVersionHashAndDate.hash,
+    currentVersionHashAndDate.hash
+  );
 
-    if (releaseDraftId !== undefined) {
-      // Update the existing draft release
-      await github.rest.repos.updateRelease({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        release_id: releaseDraftId,
-        tag_name: tagName,
-        name: tagName,
-        body,
-        draft: isDraft,
-      });
-    } else {
-      // Create a new draft release
-      await github.rest.repos.createRelease({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        tag_name: tagName,
-        name: tagName,
-        body,
-        draft: isDraft,
-      });
-    }
-  } catch (error) {
-    throw error;
+  // 4. Check if there’s an existing draft release
+  const releaseDraftId = await getReleaseDraftId({ github, context });
+
+  if (typeof releaseDraftId !== 'undefined') {
+    // Update the existing draft release
+    await github.rest.repos.updateRelease({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      release_id: releaseDraftId,
+      tag_name: tagName,
+      name: tagName,
+      body,
+      draft: isDraft,
+    });
+  } else {
+    // Create a new draft release
+    await github.rest.repos.createRelease({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      tag_name: tagName,
+      name: tagName,
+      body,
+      draft: isDraft,
+    });
   }
 }
 
@@ -292,61 +407,37 @@ function removePatch(versionTag) {
  * @returns {Promise<void>}
  */
 async function publishRelease({ github, context, tagName, oldTagName }) {
-  try {
-    // Construct the base ref from the new tag by removing the patch (e.g. "1.2.3" -> "release_1.2")
-    const baseRef = `release_${removePatch(tagName)}`;
+  // Construct a base ref from the new tag by removing the patch (e.g. "1.2.3" -> "release_1.2")
+  const baseRef = `release_${removePatch(tagName)}`;
 
-    // Get hash/date from the old tag and from the new base ref
-    const lastVersionHashAndDate = await getCommitHashAndDateFromRef({
+  // Gather commits/PRs from oldTagName -> baseRef
+  const { lastVersionHashAndDate, currentVersionHashAndDate, pullRequests } =
+    await gatherPullRequestsBetweenRefs(
       github,
       context,
-      ref: `refs/tags/${oldTagName}`,
-    });
-    const currentVersionHashAndDate = await getCommitHashAndDateFromRef({
-      github,
-      context,
-      ref: `refs/heads/${baseRef}`,
-    });
-
-    // Retrieve the commits between those two points
-    const commitHashes = await getCommitHashesFromVersionTags({
-      github,
-      context,
-      lastVersionHash: lastVersionHashAndDate.hash,
-      currentVersionHash: currentVersionHashAndDate.hash,
-    });
-
-    // Retrieve the relevant merged PRs
-    const pullRequests = await getMergedPullRequestsFromCommitHashes({
-      github,
-      context,
-      lastVersionHashAndDate,
-      currentVersionHashAndDate,
-      commitHashes,
-      baseRef,
-    });
-
-    // Build the release body
-    const body = buildReleaseBody(
-      `Version ${tagName}`,
-      pullRequests,
-      context.payload.repository.html_url,
-      lastVersionHashAndDate.hash,
-      currentVersionHashAndDate.hash
+      `refs/tags/${oldTagName}`,
+      `refs/heads/${baseRef}`,
+      baseRef
     );
 
-    // Create a new release (published, not a draft)
-    await github.rest.repos.createRelease({
-      owner: context.repo.owner,
-      repo: context.repo.repo,
-      tag_name: tagName,
-      name: tagName,
-      body,
-      draft: false,
-    });
-  } catch (error) {
-    throw error;
-  }
+  // Build the release body
+  const body = buildReleaseBody(
+    `Version ${tagName}`,
+    pullRequests,
+    context.payload.repository.html_url,
+    lastVersionHashAndDate.hash,
+    currentVersionHashAndDate.hash
+  );
+
+  // Create a new release (published, not a draft)
+  await github.rest.repos.createRelease({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    tag_name: tagName,
+    name: tagName,
+    body,
+    draft: false,
+  });
 }
 
 module.exports = {
