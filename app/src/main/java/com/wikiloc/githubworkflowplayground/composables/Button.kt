@@ -19,5 +19,7 @@ fun Button(
 @Preview
 @Composable
 fun PreviewButton() {
-  Button("Hello!")
+  Button(
+    text = "Hello!",
+  )
 }

@@ -20,6 +20,6 @@ fun Chip(
 @Composable
 private fun PreviewChip() {
   Chip(
-    text = "Hello!"
+    text = "Hello!",
   )
 }
