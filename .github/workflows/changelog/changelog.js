@@ -229,7 +229,7 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
     report.addSection("What's Changed");
     report.addList(
       classifiedPullRequests.remaining.map(
-        (pr) => `${pr.title} by @${pr.user.login} #${pr.number}`
+        (pr) => `${pr.title} by @${pr.user.login} in #${pr.number}`
       )
     );
   }
@@ -239,7 +239,7 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
     report.addSection('🐛 Bug Fixes');
     report.addList(
       classifiedPullRequests.bug.map(
-        (pr) => `${pr.title} by @${pr.user.login} #${pr.number}`
+        (pr) => `${pr.title} by @${pr.user.login} in #${pr.number}`
       )
     );
   }
@@ -249,7 +249,7 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
     report.addSection('🚀 Features');
     report.addList(
       classifiedPullRequests.feature.map(
-        (pr) => `${pr.title} by @${pr.user.login} #${pr.number}`
+        (pr) => `${pr.title} by @${pr.user.login} in #${pr.number}`
       )
     );
   }
@@ -259,7 +259,7 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
     report.addSection('🧹 Refactor');
     report.addList(
       classifiedPullRequests.refactor.map(
-        (pr) => `${pr.title} by @${pr.user.login} #${pr.number}`
+        (pr) => `${pr.title} by @${pr.user.login} in #${pr.number}`
       )
     );
   }
@@ -269,7 +269,7 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
     report.addSection('🤖 CI');
     report.addList(
       classifiedPullRequests.ci.map(
-        (pr) => `${pr.title} by @${pr.user.login} #${pr.number}`
+        (pr) => `${pr.title} by @${pr.user.login} in #${pr.number}`
       )
     );
   }
