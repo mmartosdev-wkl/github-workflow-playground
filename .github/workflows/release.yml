@@ -4,7 +4,7 @@ on:
     workflow_dispatch:
         inputs:
             version_tag:
-                description: 'New version tag (eg: 3.45.2 or empty)'
+                description: 'New version tag (eg: 3.45.2). Leave empty for auto-increment.'
                 required: false
     pull_request:
         branches:
@@ -20,203 +20,193 @@ jobs:
         name: Release Preparation
         runs-on: ubuntu-latest
         permissions:
-          contents: write
-          pull-requests: write
-        if: >
+            contents: write
+            pull-requests: write
+        if: |
             (
-                github.event_name == 'pull_request' &&
-                github.event.action == 'closed' &&
-                github.event.pull_request.merged == true &&
-                startsWith(github.event.pull_request.base.ref, 'release_')
+              github.event_name == 'pull_request' &&
+              github.event.action == 'closed' &&
+              github.event.pull_request.merged == true &&
+              startsWith(github.event.pull_request.base.ref, 'release_')
             )
             || github.event_name == 'workflow_dispatch'
 
         steps:
-            -   name: Validate input version
-                run: |
-                    VERSION="${{ inputs.version_tag }}"
-                    if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "$VERSION" ] && [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                        echo "Error: '$VERSION' is not a valid semantic version (expected format: MAJOR.MINOR.PATCH)."
-                        exit 1
-                    fi
+            - name: Validate input version
+              run: |
+                  VERSION="${{ inputs.version_tag }}"
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "$VERSION" ] && [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                    echo "Error: '$VERSION' is not a valid semantic version (expected format: MAJOR.MINOR.PATCH)."
+                    exit 1
+                  fi
 
-            -   name: Setup base branch
-                id: base_branch
-                run: |
-                    if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
-                        echo "base_branch=${{ github.event.pull_request.base.ref }}" >> $GITHUB_OUTPUT
-                    else
-                        echo "base_branch=dev" >> $GITHUB_OUTPUT
-                    fi
+            - name: Setup base branch
+              id: base_branch
+              run: |
+                  if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
+                    echo "base_branch=${{ github.event.pull_request.base.ref }}" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "base_branch=dev" >> "$GITHUB_OUTPUT"
+                  fi
 
-            -   name: Checkout codebase
-                uses: actions/checkout@v4
-                with:
-                    token: ${{ secrets.LOKALISE_PAT }}
-                    ref: ${{ steps.base_branch.outputs.base_branch }}
-                    lfs: true
-                    fetch-depth: 0
+            - name: Checkout codebase
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.LOKALISE_PAT }}
+                  ref: ${{ steps.base_branch.outputs.base_branch }}
+                  lfs: true
+                  fetch-depth: 0
 
-            -   name: Get version tag
-                id: version_tag
-                run: |
-                    CURRENT_VERSION_TAG=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
-                    if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
-                        if [ ${{ github.ref_name != 'dev' }} ]; then
-                            IFS='.' read -r MAJOR MINOR PATCH <<< "${CURRENT_VERSION_TAG}"
-                            NEW_PATCH=$((PATCH + 1))
-                            NEW_VERSION_TAG="$MAJOR.$MINOR.$NEW_PATCH"
-                            echo "version_tag=${NEW_VERSION_TAG}" >> $GITHUB_OUTPUT
-                            echo "old_version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
-                        else
-                            echo "version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
-                        fi
-                    elif [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ inputs.version_tag }}" ]; then
-                        echo "version_tag=${{ inputs.version_tag }}" >> $GITHUB_OUTPUT
-                    else
-                        echo "version_tag=${CURRENT_VERSION_TAG}" >> $GITHUB_OUTPUT
-                    fi
-
-            -   name: Create new release branch
-                id: create_branch
-                run: |
-                    VERSION_TAG="${{ steps.version_tag.outputs.version_tag }}"
-                    NEW_BRANCH="release_$(echo $VERSION_TAG | awk -F. '{print $1 "." $2}')"
-                    echo "new_branch=${NEW_BRANCH}" >> $GITHUB_OUTPUT
-                    if git ls-remote --heads origin "$NEW_BRANCH" | grep -q "refs/heads/$NEW_BRANCH"; then
-                        git checkout "$NEW_BRANCH"
-                    else 
-                        git checkout -b "$NEW_BRANCH"
-                    fi
-
-            -   name: Bump version (only in release branch)
-                id: bump_version
-                run: |
-                    VERSION_TAG="${{ steps.version_tag.outputs.version_tag }}"
-                    VERSION_CODE=$(grep '^versionCode=' app/gradle.properties | cut -d'=' -f2)
-                    if [ ${{ github.ref_name != 'dev' }} ]; then
-                        NEW_VERSION_CODE=$((VERSION_CODE + 1))
-                        sed -i "s/^versionName=.*/versionName=${VERSION_TAG}/" app/gradle.properties
-                        sed -i "s/^versionCode=.*/versionCode=${NEW_VERSION_CODE}/" app/gradle.properties
-                        echo "version_code=${NEW_VERSION_CODE}" >> $GITHUB_OUTPUT
-                    else
-                        echo "version_code=${VERSION_CODE}" >> $GITHUB_OUTPUT
-                    fi
-
-            -   name: Commit changes
-                run: |
-                    git config user.email "wikiloctech@gmail.com"
-                    git config user.name "wikiloc-forest"
-                    git add app/gradle.properties
-                    git commit -m "build: ${{ steps.version_tag.outputs.version_tag }}-${{ steps.bump_version.outputs.version_code }}"
-
-            -   name: Push Release Branch and Tag
-                run: |
-                    if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
-                        git pull origin "${{ steps.create_branch.outputs.new_branch }}" 
-                    fi
-                    git push origin "${{ steps.create_branch.outputs.new_branch }}"
-
-            -   name: Update dev branch
-                run: |
-                    git checkout dev
-                    CURRENT_DEV_VERSION_TAG=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
-                    git merge "${{ steps.create_branch.outputs.new_branch }}" --no-ff || true
-                    if [ -n "$(git ls-files -u)" ]; then
-                        echo "Merge conflict detected!"
+            - name: Determine version tag
+              id: version_tag
+              env:
+                  GITHUB_REF_NAME: ${{ github.ref_name }}
+              run: |
+                  CURRENT_VERSION_TAG=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
                   
-                        # Collect conflict files
-                        CONFLICT_FILES=$(git ls-files -u | cut -f2 | sort | uniq)
-                  
-                        # Check if the only conflict is app/gradle.properties
-                        if [ "$CONFLICT_FILES" = "app/gradle.properties" ]; then
-                            echo "Conflict is only in app/gradle.properties, OK to proceed."
-                            git checkout --theirs app/gradle.properties
-                            git add app/gradle.properties
-                            git commit -m "fix: auto-resolved conflict in app/gradle.properties by taking release version"
-                        else
-                            echo "Conflict in other files: $CONFLICT_FILES"
-                            echo "Please resolve or handle these conflicts before merging."
-                            git merge --abort || true
-                            exit 1
-                        fi
-                    fi                    
-                    
-                    if [ ${{ github.ref_name == 'dev' }} ]; then
-                        # Get current version tag and code
-                        CURRENT_VERSION_TAG=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
-                        CURRENT_VERSION_CODE=$(grep '^versionCode=' app/gradle.properties | cut -d'=' -f2)
-
-                        # Bump version tag
-                        IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION_TAG"
-                        NEW_MINOR=$((MINOR + 1))
-                        NEW_PATCH=0
-                        NEW_VERSION_TAG="$MAJOR.$NEW_MINOR.$NEW_PATCH"
-                    
-                        # Bump version code
-                        NEW_VERSION_CODE=$((CURRENT_VERSION_CODE + 1))
-                    
-                        # Update gradle.properties file
-                        sed -i "s/^versionName=.*/versionName=${NEW_VERSION_TAG}/" app/gradle.properties
-                        sed -i "s/^versionCode=.*/versionCode=${NEW_VERSION_CODE}/" app/gradle.properties
-                        git add app/gradle.properties
-                        git commit -m "Bump version: $NEW_VERSION_TAG-$NEW_VERSION_CODE"
+                  # Pull Request merged
+                  if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
+                    # If the merged PR's base is not dev, bump patch version
+                    if [ "$GITHUB_REF_NAME" != "dev" ]; then
+                      IFS='.' read -r MAJOR MINOR PATCH <<< "${CURRENT_VERSION_TAG}"
+                      NEW_PATCH=$((PATCH + 1))
+                      NEW_VERSION_TAG="$MAJOR.$MINOR.$NEW_PATCH"
+                      echo "version_tag=${NEW_VERSION_TAG}" >> "$GITHUB_OUTPUT"
+                      echo "old_version_tag=${CURRENT_VERSION_TAG}" >> "$GITHUB_OUTPUT"
                     else
-                        # Get current version code
-                        CURRENT_VERSION_CODE=$(grep '^versionCode=' app/gradle.properties | cut -d'=' -f2)
-                    
-                        # Bump version code
-                        NEW_VERSION_CODE=$((CURRENT_VERSION_CODE + 1))
-                    
-                        # Update gradle.properties file
-                        sed -i "s/^versionName=.*/versionName=${CURRENT_DEV_VERSION_TAG}/" app/gradle.properties
-                        sed -i "s/^versionCode=.*/versionCode=${NEW_VERSION_CODE}/" app/gradle.properties
-                        git add app/gradle.properties
-                        git commit -m "Bump version: $CURRENT_DEV_VERSION_TAG-$NEW_VERSION_CODE"
+                      echo "version_tag=${CURRENT_VERSION_TAG}" >> "$GITHUB_OUTPUT"
                     fi
-                    git push origin dev
+                  
+                  # Manual dispatch
+                  elif [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ inputs.version_tag }}" ]; then
+                    echo "version_tag=${{ inputs.version_tag }}" >> "$GITHUB_OUTPUT"
+                  
+                  # Fallback to current version
+                  else
+                    echo "version_tag=${CURRENT_VERSION_TAG}" >> "$GITHUB_OUTPUT"
+                  fi
 
-            -   name: Publish release draft
-                if: github.ref_name == 'dev'
-                uses: actions/github-script@v7
-                with:
-                    script: |
-                        const changelog = require('.github/workflows/changelog/changelog.js')
-                        await changelog.createRelease({
-                            github: github,
-                            context: context,
-                            tagName: process.env.CURRENT_VERSION_TAG,
-                            isDraft: false,
-                        });
-                env:
-                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                    CURRENT_VERSION_TAG: ${{ steps.version_tag.outputs.version_tag }}
+            - name: Create or switch to release branch
+              id: create_branch
+              run: |
+                  VERSION_TAG="${{ steps.version_tag.outputs.version_tag }}"
+                  NEW_BRANCH="release_$(echo "$VERSION_TAG" | awk -F. '{print $1 "." $2}')"
+                  echo "new_branch=${NEW_BRANCH}" >> "$GITHUB_OUTPUT"
+                  
+                  if git ls-remote --heads origin "$NEW_BRANCH" | grep -q "refs/heads/$NEW_BRANCH"; then
+                    git checkout "$NEW_BRANCH"
+                  else 
+                    git checkout -b "$NEW_BRANCH"
+                  fi
 
-            -   name: Create new release
-                if: github.ref_name != 'dev'
-                uses: actions/github-script@v7
-                with:
-                    script: |
-                        const changelog = require('.github/workflows/changelog/changelog.js')
-                        await changelog.publishRelease({
-                            github: github,
-                            context: context,
-                            oldTagName: process.env.OLD_VERSION_TAG,
-                            tagName: process.env.CURRENT_VERSION_TAG,
-                        });
-                env:
-                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                    OLD_VERSION_TAG: ${{ steps.version_tag.outputs.old_version_tag }}
-                    CURRENT_VERSION_TAG: ${{ steps.version_tag.outputs.version_tag }}
+            - name: Bump version (only in release branch)
+              id: bump_version
+              env:
+                  GITHUB_REF_NAME: ${{ github.ref_name }}
+              run: |
+                  VERSION_TAG="${{ steps.version_tag.outputs.version_tag }}"
+                  VERSION_CODE=$(grep '^versionCode=' app/gradle.properties | cut -d'=' -f2)
+                  
+                  # Only bump if the current ref is NOT dev
+                  if [ "$GITHUB_REF_NAME" != "dev" ]; then
+                    NEW_VERSION_CODE=$((VERSION_CODE + 1))
+                    sed -i "s/^versionName=.*/versionName=${VERSION_TAG}/" app/gradle.properties
+                    sed -i "s/^versionCode=.*/versionCode=${NEW_VERSION_CODE}/" app/gradle.properties
+                    echo "version_code=${NEW_VERSION_CODE}" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "version_code=${VERSION_CODE}" >> "$GITHUB_OUTPUT"
+                  fi
 
-#            -   name: Create GitHub Release
-#                uses: softprops/action-gh-release@v1
-#                with:
-#                    tag_name: ${{ steps.version_tag.outputs.version_tag }}
-#                    name: "${{ steps.version_tag.outputs.version_tag }}"
-#                    body: |
-                          # What’s Changed
-#
-#                          - ${{ github.event.pull_request.title }} by @${{ github.event.pull_request.user.login }} in ${{ github.event.pull_request.id }}
-#                env:
-#                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Commit changes
+              run: |
+                  git config user.email "wikiloctech@gmail.com"
+                  git config user.name "wikiloc-forest"
+                  git add app/gradle.properties
+                  git commit -m "build: ${{ steps.version_tag.outputs.version_tag }}-${{ steps.bump_version.outputs.version_code }}" || echo "No changes to commit."
+
+            - name: Push Release Branch
+              run: |
+                  # If this workflow was triggered by a merged PR, pull the branch before pushing
+                  if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
+                    git pull origin "${{ steps.create_branch.outputs.new_branch }}" 
+                  fi
+                  git push origin "${{ steps.create_branch.outputs.new_branch }}"
+
+            - name: Update dev branch
+              run: |
+                  git checkout dev
+                  CURRENT_DEV_VERSION_TAG=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
+                  
+                  # Merge the release branch into dev
+                  git merge "${{ steps.create_branch.outputs.new_branch }}" --no-ff || true
+                  
+                  # If there's a conflict, handle it
+                  if [ -n "$(git ls-files -u)" ]; then
+                    echo "Merge conflict detected!"
+                    CONFLICT_FILES=$(git ls-files -u | cut -f2 | sort | uniq)
+                  
+                    if [ "$CONFLICT_FILES" = "app/gradle.properties" ]; then
+                      echo "Conflict only in app/gradle.properties; taking release version..."
+                      git checkout --theirs app/gradle.properties
+                      git add app/gradle.properties
+                      git commit -m "fix: auto-resolved conflict in app/gradle.properties by taking release version"
+                    else
+                      echo "Conflict in other files: $CONFLICT_FILES"
+                      echo "Please resolve or handle these conflicts manually."
+                      git merge --abort || true
+                      exit 1
+                    fi
+                  fi
+                  
+                  # Now decide how to bump dev version
+                  # (We only treat it differently if we're currently on 'dev' in this job,
+                  #  but we've just checked out dev, so we know we are on dev.)
+                  
+                  CURRENT_VERSION_CODE=$(grep '^versionCode=' app/gradle.properties | cut -d'=' -f2)
+                  
+                  # Minor bump on dev
+                  IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_DEV_VERSION_TAG"
+                  NEW_MINOR=$((MINOR + 1))
+                  NEW_PATCH=0
+                  NEW_VERSION_TAG="$MAJOR.$NEW_MINOR.$NEW_PATCH"
+                  NEW_VERSION_CODE=$((CURRENT_VERSION_CODE + 1))
+                  
+                  sed -i "s/^versionName=.*/versionName=${NEW_VERSION_TAG}/" app/gradle.properties
+                  sed -i "s/^versionCode=.*/versionCode=${NEW_VERSION_CODE}/" app/gradle.properties
+                  git add app/gradle.properties
+                  git commit -m "Bump version: $NEW_VERSION_TAG-$NEW_VERSION_CODE" || echo "No changes to commit."
+                  
+                  git push origin dev
+
+            - name: Publish release draft (for dev)
+              if: github.ref_name == 'dev'
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const changelog = require('.github/workflows/changelog/changelog.js')
+                      await changelog.createRelease({
+                        github: github,
+                        context: context,
+                        tagName: process.env.CURRENT_VERSION_TAG,
+                        isDraft: false,
+                      });
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  CURRENT_VERSION_TAG: ${{ steps.version_tag.outputs.version_tag }}
+
+            - name: Create new release (for release branches)
+              if: github.ref_name != 'dev'
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const changelog = require('.github/workflows/changelog/changelog.js')
+                      await changelog.publishRelease({
+                        github: github,
+                        context: context,
+                        oldTagName: process.env.OLD_VERSION_TAG,
+                        tagName: process.env.CURRENT_VERSION_TAG,
+                      });
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  OLD_VERSION_TAG: ${{ steps.version_tag.outputs.old_version_tag }}
+                  CURRENT_VERSION_TAG: ${{ steps.version_tag.outputs.version_tag }}
