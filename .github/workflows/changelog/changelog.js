@@ -218,6 +218,14 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
   const labelCategories = ['bug', 'feature', 'refactor', 'ci'];
   const classifiedPullRequests = classifyPullRequestByLabels(pullRequests, labelCategories);
 
+  console.log(pullRequests);
+  console.log(classifiedPullRequests);
+  console.log(classifiedPullRequests.remaining.length);
+  console.log(classifiedPullRequests.remaining.bug);
+  console.log(classifiedPullRequests.remaining.feature);
+  console.log(classifiedPullRequests.remaining.refactor);
+  console.log(classifiedPullRequests.remaining.ci);
+
   // 1. Remaining
   if (classifiedPullRequests.remaining.length !== 0) {
     report.addSection("What's Changed");
