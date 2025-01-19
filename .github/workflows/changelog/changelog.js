@@ -221,10 +221,10 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
   console.log(pullRequests);
   console.log(classifiedPullRequests);
   console.log(classifiedPullRequests.remaining.length);
-  console.log(classifiedPullRequests.remaining.bug);
-  console.log(classifiedPullRequests.remaining.feature);
-  console.log(classifiedPullRequests.remaining.refactor);
-  console.log(classifiedPullRequests.remaining.ci);
+  console.log(classifiedPullRequests.bug.length);
+  console.log(classifiedPullRequests.feature.length);
+  console.log(classifiedPullRequests.refactor.length);
+  console.log(classifiedPullRequests.ci.length);
 
   // 1. Remaining
   if (classifiedPullRequests.remaining.length !== 0) {
