@@ -218,8 +218,6 @@ function buildReleaseBody(versionLabel, pullRequests, repoUrl, fromHash, toHash)
   const labelCategories = ['bug', 'feature', 'refactor', 'ci'];
   const classifiedPullRequests = classifyPullRequestByLabels(pullRequests, labelCategories);
 
-  console.log(pullRequests);
-  console.log(classifiedPullRequests);
   console.log(classifiedPullRequests.remaining.length);
   console.log(classifiedPullRequests.bug.length);
   console.log(classifiedPullRequests.feature.length);
