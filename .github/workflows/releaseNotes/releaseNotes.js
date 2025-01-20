@@ -312,6 +312,12 @@ async function gatherPullRequestsBetweenRefs(github, context, fromRef, toRef, ba
     ref: fromRef,
   });
 
+  const currentVersionHashAndDate = await getCommitHashAndDateFromRef({
+    github,
+    context,
+    ref: toRef,
+  });
+
   const commitHashes = await getCommitHashesFromVersionTags({
     github,
     context,
@@ -461,7 +467,7 @@ async function publishRelease({ github, context, tagName, oldTagName }) {
     body,
     draft: false,
   });
-  console.log(`<-- publishRelease`);
+  console.log(`<--> publishRelease`);
 }
 
 module.exports = {
