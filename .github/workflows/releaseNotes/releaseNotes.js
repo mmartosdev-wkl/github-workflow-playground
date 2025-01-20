@@ -382,6 +382,8 @@ async function createRelease({ github, context, tagName, isDraft }) {
   // 4. Check if there’s an existing draft release
   const releaseDraftId = await getReleaseDraftId({ github, context });
   if (releaseDraftId !== undefined) {
+    console.log(`tagName -> ${tagName}`);
+    console.log(`isDraft -> ${isDraft}`);
     // Update the existing draft release
     await github.rest.repos.updateRelease({
       owner: context.repo.owner,
