@@ -1,4 +1,4 @@
-name: Update changelog
+name: Update Release Notes
 
 on:
     pull_request:
@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
     update_changelog:
-        name: Update changelog
+        name: Update Release Notes
         runs-on: ubuntu-latest
         permissions:
             contents: write
@@ -21,10 +21,11 @@ jobs:
         if: github.event.pull_request.merged == true
 
         steps:
-            - name: Check out codebase
+            - name: Checkout codebase
               uses: actions/checkout@v4
               with:
-                  fetch-depth: 0
+                  fetch-depth: 1
+                  lfs: false
 
             - name: Identify current version tag
               id: current_release
@@ -39,7 +40,6 @@ jobs:
                   echo "version_tag=${CURRENT_VERSION_TAG}" >> "$GITHUB_OUTPUT"
 
             - name: Create release draft with proper changelog
-              id: unified
               uses: actions/github-script@v7
               with:
                   script: |
