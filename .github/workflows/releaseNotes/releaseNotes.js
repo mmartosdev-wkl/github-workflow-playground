@@ -17,7 +17,7 @@ const MarkdownReport = require('./markdownReport');
  * @returns {Promise<{hash: string, date: string}>} - An object with the commit's hash and date.
  */
 async function getCommitHashAndDateFromRef({ github, context, ref }) {
-  console.log(`--> getCommitHashAndDateFromRef`);
+  console.log(`--> getCommitHashAndDateFromRef: ref -> ${ref}`);
   const { data: commit } = await github.rest.repos.getCommit({
     owner: context.repo.owner,
     repo: context.repo.repo,
@@ -99,6 +99,34 @@ async function getReleaseDraftId({ github, context }) {
   const result = draftRelease ? draftRelease.id : undefined;
   console.log(`<-- getReleaseDraftId -> ${result}`);
   return result;
+}
+
+async function getLastReleaseTagName({ github, context, lastTagNameWithoutPatch }) {
+  console.log(`<-- getLastReleaseTagName`);
+  const regex = new RegExp(`^${lastTagNameWithoutPatch}\\.\\d+$`);
+  const releases = await github.paginate(
+    github.rest.repos.listReleases,
+    {
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+    },
+    (response, done) => {
+      const filteredReleases = response.data.filter(release => regex.test(release.tag_name));
+      if (filteredReleases.length === 0) {
+        done();
+      }
+      return filteredReleases;
+    }
+  );
+
+  if (!releases.length) {
+    console.log("<-- getLastReleaseTagName -> no matching release found");
+    return null; 
+  }
+
+  const lastTagName = releases[0].tag_name;
+  console.log(`<-- getLastReleaseTagName -> ${lastTagName}`);
+  return lastTagName;
 }
 
 /**
@@ -434,21 +462,23 @@ function removePatch(versionTag) {
  * @param {Object} params.github - GitHub REST API object.
  * @param {Object} params.context - GitHub Actions context.
  * @param {string} params.tagName - The new release tag name.
- * @param {string} params.oldTagName - The old release tag name to compare against.
  * @returns {Promise<void>}
  */
 async function publishRelease({ github, context, tagName, oldTagName }) {
   console.log(`--> publishRelease`);
 
   // Construct a base ref from the new tag by removing the patch (e.g. "1.2.3" -> "release_1.2")
-  const baseRef = `release_${removePatch(tagName)}`;
+  const tagNameWithoutPatch = removePatch(tagName);
+  const baseRef = `release_${tagNameWithoutPatch}`;
+
+  const lastTagName = getLastReleaseTagName(tagNameWithoutPatch);
 
   // Gather commits/PRs from oldTagName -> baseRef
   const { lastVersionHashAndDate, currentVersionHashAndDate, pullRequests } =
     await gatherPullRequestsBetweenRefs(
       github,
       context,
-      `refs/tags/${oldTagName}`,
+      `refs/tags/${lastTagName}`,
       `refs/heads/${baseRef}`,
       baseRef
     );
