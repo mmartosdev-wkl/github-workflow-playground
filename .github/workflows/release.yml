@@ -128,13 +128,13 @@ jobs:
                   git add app/gradle.properties
                   git commit -m "build: ${{ steps.version_tag.outputs.version_tag }}-${{ steps.bump_version.outputs.version_code }}" || echo "No changes to commit."
 
-#            - name: Push Release Branch
-#              run: |
-#                  if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
-#                    git pull origin "${{ steps.create_branch.outputs.new_branch }}"
-#                  fi
-#                  git push origin "${{ steps.create_branch.outputs.new_branch }}"
-#
+            - name: Push Release Branch
+              run: |
+                  if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
+                    git pull origin "${{ steps.create_branch.outputs.new_branch }}"
+                  fi
+                  git push origin "${{ steps.create_branch.outputs.new_branch }}"
+
 #            - name: Update dev branch
 #              env:
 #                  GITHUB_REF_NAME: ${{ github.ref_name }}
