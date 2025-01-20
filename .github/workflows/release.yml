@@ -90,19 +90,19 @@ jobs:
                     echo "version_tag=${CURRENT_VERSION_TAG}" >> "$GITHUB_OUTPUT"
                   fi
 
-#            - name: Create or switch to release branch
-#              id: create_branch
-#              run: |
-#                  VERSION_TAG="${{ steps.version_tag.outputs.version_tag }}"
-#                  NEW_BRANCH="release_$(echo "$VERSION_TAG" | awk -F. '{print $1 "." $2}')"
-#                  echo "new_branch=${NEW_BRANCH}" >> "$GITHUB_OUTPUT"
-#
-#                  if git ls-remote --heads origin "$NEW_BRANCH" | grep -q "refs/heads/$NEW_BRANCH"; then
-#                    git checkout "$NEW_BRANCH"
-#                  else
-#                    git checkout -b "$NEW_BRANCH"
-#                  fi
-#
+            - name: Create or switch to release branch
+              id: create_branch
+              run: |
+                  VERSION_TAG="${{ steps.version_tag.outputs.version_tag }}"
+                  NEW_BRANCH="release_$(echo "$VERSION_TAG" | awk -F. '{print $1 "." $2}')"
+                  echo "new_branch=${NEW_BRANCH}" >> "$GITHUB_OUTPUT"
+
+                  if git ls-remote --heads origin "$NEW_BRANCH" | grep -q "refs/heads/$NEW_BRANCH"; then
+                    git checkout "$NEW_BRANCH"
+                  else
+                    git checkout -b "$NEW_BRANCH"
+                  fi
+
 #            - name: Bump version (only in release branch)
 #              id: bump_version
 #              env:
