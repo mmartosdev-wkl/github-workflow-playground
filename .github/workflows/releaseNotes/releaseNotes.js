@@ -108,8 +108,9 @@ function escapeRegExp(str) {
 
 
 async function getLastReleaseTagName({ github, context, lastTagNameWithoutPatch }) {
-  console.log(`<-- getLastReleaseTagName`);
+  console.log(`<-- getLastReleaseTagName -> ${lastTagNameWithoutPatch}`);
   const escapedBaseTag = escapeRegExp(lastTagNameWithoutPatch);
+  console.log(`escapedBaseTag -> ${escapedBaseTag}`);
   const regex = new RegExp(`^${escapedBaseTag}\\.\\d+$`);
   const releases = await github.paginate(
     github.rest.repos.listReleases,
