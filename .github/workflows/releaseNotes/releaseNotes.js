@@ -464,14 +464,14 @@ function removePatch(versionTag) {
  * @param {string} params.tagName - The new release tag name.
  * @returns {Promise<void>}
  */
-async function publishRelease({ github, context, tagName, oldTagName }) {
+async function publishRelease({ github, context, tagName}) {
   console.log(`--> publishRelease`);
 
   // Construct a base ref from the new tag by removing the patch (e.g. "1.2.3" -> "release_1.2")
   const tagNameWithoutPatch = removePatch(tagName);
   const baseRef = `release_${tagNameWithoutPatch}`;
 
-  const lastTagName = await getLastReleaseTagName(tagNameWithoutPatch);
+  const lastTagName = await getLastReleaseTagName({ github, context, tagNameWithoutPatch});
 
   // Gather commits/PRs from oldTagName -> baseRef
   const { lastVersionHashAndDate, currentVersionHashAndDate, pullRequests } =
