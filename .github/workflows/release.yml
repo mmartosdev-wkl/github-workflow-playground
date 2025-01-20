@@ -49,14 +49,14 @@ jobs:
                     echo "base_branch=dev" >> "$GITHUB_OUTPUT"
                   fi
 
-#            - name: Checkout codebase
-#              uses: actions/checkout@v4
-#              with:
-#                  token: ${{ secrets.LOKALISE_PAT }}
-#                  ref: ${{ steps.base_branch.outputs.base_branch }}
-#                  fetch-depth: 1
-#                  lfs: false
-#
+            - name: Checkout codebase
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.LOKALISE_PAT }}
+                  ref: ${{ steps.base_branch.outputs.base_branch }}
+                  fetch-depth: 1
+                  lfs: false
+
 #            - name: Determine version tag
 #              id: version_tag
 #              env:
