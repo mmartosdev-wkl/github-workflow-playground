@@ -31,15 +31,15 @@ jobs:
             )
             || github.event_name == 'workflow_dispatch'
 
-#        steps:
-#            - name: Validate input version
-#              run: |
-#                  VERSION="${{ inputs.version_tag }}"
-#                  if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "$VERSION" ] && [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-#                    echo "Error: '$VERSION' is not a valid semantic version (expected format: MAJOR.MINOR.PATCH)."
-#                    exit 1
-#                  fi
-#
+        steps:
+            - name: Validate input version
+              run: |
+                  VERSION="${{ inputs.version_tag }}"
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "$VERSION" ] && [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                    echo "Error: '$VERSION' is not a valid semantic version (expected format: MAJOR.MINOR.PATCH)."
+                    exit 1
+                  fi
+
 #            - name: Setup base branch
 #              id: base_branch
 #              run: |
