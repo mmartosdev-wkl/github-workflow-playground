@@ -338,9 +338,12 @@ async function gatherPullRequestsBetweenRefs(github, context, fromRef, toRef, ba
  */
 async function createRelease({ github, context, tagName, isDraft }) {
   // 1. Find last version tag that matches x.y.0
+  console.log('--> createRelease');
+  console.log('getLastVersionTag');
   const lastVersionTag = await getLastVersionTag({ github, context });
 
   // 2. Gather commits and PRs from lastVersionTag -> dev
+  console.log('gatherPullRequestsBetweenRefs');
   const { lastVersionHashAndDate, currentVersionHashAndDate, pullRequests } =
     await gatherPullRequestsBetweenRefs(
       github,
@@ -351,6 +354,7 @@ async function createRelease({ github, context, tagName, isDraft }) {
     );
 
   // 3. Build the release body
+  console.log('buildReleaseBody');
   const body = buildReleaseBody(
     `Version ${tagName}`,
     pullRequests,
@@ -360,10 +364,13 @@ async function createRelease({ github, context, tagName, isDraft }) {
   );
 
   // 4. Check if there’s an existing draft release
+  console.log('getReleaseDraftId');
   const releaseDraftId = await getReleaseDraftId({ github, context });
 
+  console.log(`releaseDraftId -> ${releaseDraftId}`);
   if (releaseDraftId !== undefined) {
     // Update the existing draft release
+    console.log(`updateRelease`);
     await github.rest.repos.updateRelease({
       owner: context.repo.owner,
       repo: context.repo.repo,
@@ -375,6 +382,7 @@ async function createRelease({ github, context, tagName, isDraft }) {
     });
   } else {
     // Create a new draft release
+    console.log(`createRelease`);
     await github.rest.repos.createRelease({
       owner: context.repo.owner,
       repo: context.repo.repo,
@@ -413,10 +421,14 @@ function removePatch(versionTag) {
  * @returns {Promise<void>}
  */
 async function publishRelease({ github, context, tagName, oldTagName }) {
+  console.log('--> publishRelease');
+
   // Construct a base ref from the new tag by removing the patch (e.g. "1.2.3" -> "release_1.2")
   const baseRef = `release_${removePatch(tagName)}`;
+  console.log(`baseRef -> ${baseRef}`);
 
   // Gather commits/PRs from oldTagName -> baseRef
+  console.log(`gatherPullRequestsBetweenRefs`);
   const { lastVersionHashAndDate, currentVersionHashAndDate, pullRequests } =
     await gatherPullRequestsBetweenRefs(
       github,
@@ -427,6 +439,7 @@ async function publishRelease({ github, context, tagName, oldTagName }) {
     );
 
   // Build the release body
+  console.log(`buildReleaseBody`);
   const body = buildReleaseBody(
     `Version ${tagName}`,
     pullRequests,
@@ -436,6 +449,7 @@ async function publishRelease({ github, context, tagName, oldTagName }) {
   );
 
   // Create a new release (published, not a draft)
+  console.log(`createRelease`);
   await github.rest.repos.createRelease({
     owner: context.repo.owner,
     repo: context.repo.repo,
