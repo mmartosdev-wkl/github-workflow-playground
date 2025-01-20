@@ -335,6 +335,7 @@ async function gatherPullRequestsBetweenRefs(github, context, fromRef, toRef, ba
 
   const result = {
     lastVersionHashAndDate,
+    currentVersionHashAndDate,
     commitHashes,
     pullRequests,
   };
