@@ -53,7 +53,6 @@ jobs:
               uses: actions/checkout@v4
               with:
                   token: ${{ secrets.LOKALISE_PAT }}
-                  ref: ${{ steps.base_branch.outputs.base_branch }}
                   fetch-depth: 1
                   lfs: false
 
@@ -140,16 +139,20 @@ jobs:
                   GITHUB_REF_NAME: ${{ github.ref_name }}
               run: |
                   # 1. Switch to dev
+                  echo "1. Switch to dev"
                   git checkout dev
 
                   # 2. Save dev's version before merge
+                  echo "2. Save dev's version before merge"
                   DEV_VERSION_BEFORE=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
                   CODE_BEFORE=$(grep '^versionCode=' app/gradle.properties | cut -d'=' -f2)
 
                   # 3. Merge release branch changes
+                  echo "3. Merge release branch changes"
                   git merge "${{ steps.create_branch.outputs.new_branch }}" --no-ff || true
 
                   # 4. If there's a conflict, handle it
+                  echo "4. If there's a conflict, handle it"
                   if [ -n "$(git ls-files -u)" ]; then
                     echo "Merge conflict detected!"
                     CONFLICT_FILES=$(git ls-files -u | cut -f2 | sort | uniq)
@@ -168,6 +171,7 @@ jobs:
                   fi
 
                   # 5. If we're doing a release cut, bump minor version and versionCode
+                  echo "5. If we're doing a release cut, bump minor version and versionCode"
                   if [ "$GITHUB_REF_NAME" == "dev" ]; then
                     # Get current version tag and code
                     CURRENT_VERSION_TAG=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
@@ -188,8 +192,9 @@ jobs:
                     git add app/gradle.properties
                     git commit -m "Bump version: $NEW_VERSION_TAG-$NEW_VERSION_CODE"
 
-                  # 5. If not, versionName has already being bumped, so only bump versionCode
+                  # 6. If not, versionName has already being bumped, so only bump versionCode
                   else
+                    echo "6. If not, versionName has already being bumped, so only bump versionCode"
                     # Get current version code
                     CURRENT_VERSION_CODE=$(grep '^versionCode=' app/gradle.properties | cut -d'=' -f2)
 
@@ -202,6 +207,7 @@ jobs:
                     git add app/gradle.properties
                     git commit -m "Bump version: DEV_VERSION_BEFORE-$NEW_VERSION_CODE"
                   fi
+                  echo "7. finish"
                   git push origin dev
 
             - name: Publish release draft (for dev)
