@@ -2,6 +2,7 @@
  * Checkout these as a reference of the APIs used in this code:
  *   - Github Rest API: https://octokit.github.io/rest.js/v21/
  *   - Paginate API: https://github.com/octokit/plugin-paginate-rest.js
+ * Maybe this could potentially become a proper github action published by Wikiloc Tech
  */
 
 const MarkdownReport = require('./markdownReport');
