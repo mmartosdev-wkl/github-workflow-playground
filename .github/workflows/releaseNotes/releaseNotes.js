@@ -101,17 +101,31 @@ async function getReleaseDraftId({ github, context }) {
   return result;
 }
 
+/**
+ * Escapes any special characters in a string to make it safe for use in a regular expression.
+ * 
+ * @param {string} str - The input string to be escaped.
+ * @returns {string} - The escaped string, safe for use in a regular expression.
+ */
 function escapeRegExp(str) {
-  // Escapes any special characters in a string to make it safe for use in a regular expression
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-
+/**
+ * Retrieves the most recent release tag name matching a specific base tag format.
+ * 
+ * @param {Object} params - Parameters for the function.
+ * @param {Object} params.github - GitHub REST API object.
+ * @param {Object} params.context - GitHub Actions context.
+ * @param {string} params.tagNameWithoutPatch - The base tag name without the patch version to match against.
+ * @returns {Promise<string|null>} - The name of the last matching release tag, or null if no match is found.
+ */
 async function getLastReleaseTagName({ github, context, tagNameWithoutPatch }) {
   console.log(`<-- getLastReleaseTagName -> ${tagNameWithoutPatch}`);
   const escapedBaseTag = escapeRegExp(tagNameWithoutPatch);
-  console.log(`escapedBaseTag -> ${escapedBaseTag}`);
   const regex = new RegExp(`^${escapedBaseTag}\\.\\d+$`);
+  
+  // Retrieve all releases from the GitHub repository and filter them based on the regex.
   const releases = await github.paginate(
     github.rest.repos.listReleases,
     {
@@ -121,7 +135,7 @@ async function getLastReleaseTagName({ github, context, tagNameWithoutPatch }) {
     (response, done) => {
       const filteredReleases = response.data.filter(release => regex.test(release.tag_name));
       if (filteredReleases.length === 0) {
-        done();
+        done(); // Stop pagination if no matching releases are found.
       }
       return filteredReleases;
     }
