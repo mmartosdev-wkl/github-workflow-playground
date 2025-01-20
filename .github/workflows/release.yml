@@ -53,7 +53,7 @@ jobs:
               uses: actions/checkout@v4
               with:
                   token: ${{ secrets.LOKALISE_PAT }}
-                  fetch-depth: 1
+                  fetch-depth: 0
                   lfs: false
 
             - name: Determine version tag
