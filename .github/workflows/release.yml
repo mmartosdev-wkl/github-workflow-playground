@@ -40,15 +40,15 @@ jobs:
                     exit 1
                   fi
 
-#            - name: Setup base branch
-#              id: base_branch
-#              run: |
-#                  if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
-#                    echo "base_branch=${{ github.event.pull_request.base.ref }}" >> "$GITHUB_OUTPUT"
-#                  else
-#                    echo "base_branch=dev" >> "$GITHUB_OUTPUT"
-#                  fi
-#
+            - name: Setup base branch
+              id: base_branch
+              run: |
+                  if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
+                    echo "base_branch=${{ github.event.pull_request.base.ref }}" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "base_branch=dev" >> "$GITHUB_OUTPUT"
+                  fi
+
 #            - name: Checkout codebase
 #              uses: actions/checkout@v4
 #              with:
