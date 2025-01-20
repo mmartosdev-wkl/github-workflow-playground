@@ -103,24 +103,24 @@ jobs:
                     git checkout -b "$NEW_BRANCH"
                   fi
 
-#            - name: Bump version (only in release branch)
-#              id: bump_version
-#              env:
-#                  GITHUB_REF_NAME: ${{ github.ref_name }}
-#              run: |
-#                  VERSION_TAG="${{ steps.version_tag.outputs.version_tag }}"
-#                  VERSION_CODE=$(grep '^versionCode=' app/gradle.properties | cut -d'=' -f2)
-#
-#                  # Only bump if the current ref is NOT dev
-#                  if [ "$GITHUB_REF_NAME" != "dev" ]; then
-#                    NEW_VERSION_CODE=$((VERSION_CODE + 1))
-#                    sed -i "s/^versionName=.*/versionName=${VERSION_TAG}/" app/gradle.properties
-#                    sed -i "s/^versionCode=.*/versionCode=${NEW_VERSION_CODE}/" app/gradle.properties
-#                    echo "version_code=${NEW_VERSION_CODE}" >> "$GITHUB_OUTPUT"
-#                  else
-#                    echo "version_code=${VERSION_CODE}" >> "$GITHUB_OUTPUT"
-#                  fi
-#
+            - name: Bump version (only in release branch)
+              id: bump_version
+              env:
+                  GITHUB_REF_NAME: ${{ github.ref_name }}
+              run: |
+                  VERSION_TAG="${{ steps.version_tag.outputs.version_tag }}"
+                  VERSION_CODE=$(grep '^versionCode=' app/gradle.properties | cut -d'=' -f2)
+
+                  # Only bump if the current ref is NOT dev
+                  if [ "$GITHUB_REF_NAME" != "dev" ]; then
+                    NEW_VERSION_CODE=$((VERSION_CODE + 1))
+                    sed -i "s/^versionName=.*/versionName=${VERSION_TAG}/" app/gradle.properties
+                    sed -i "s/^versionCode=.*/versionCode=${NEW_VERSION_CODE}/" app/gradle.properties
+                    echo "version_code=${NEW_VERSION_CODE}" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "version_code=${VERSION_CODE}" >> "$GITHUB_OUTPUT"
+                  fi
+
 #            - name: Commit changes
 #              run: |
 #                  git config user.email "wikiloctech@gmail.com"
