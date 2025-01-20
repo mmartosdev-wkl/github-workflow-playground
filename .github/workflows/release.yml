@@ -168,7 +168,7 @@ jobs:
                   fi
                   
                   # 5. If we're doing a release cut, bump minor version and versionCode
-                  if [ "$GITHUB_REF_NAME" == "dev" }} ]; then
+                  if [ "$GITHUB_REF_NAME" == "dev" ]; then
                     # Get current version tag and code
                     CURRENT_VERSION_TAG=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
                     CURRENT_VERSION_CODE=$(grep '^versionCode=' app/gradle.properties | cut -d'=' -f2)
