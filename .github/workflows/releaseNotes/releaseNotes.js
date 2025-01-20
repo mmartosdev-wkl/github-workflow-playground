@@ -1,3 +1,9 @@
+/**
+ * Checkout these as a reference of the APIs used in this code:
+ *   - Github Rest API: https://octokit.github.io/rest.js/v21/
+ *   - Paginate API: https://github.com/octokit/plugin-paginate-rest.js
+ */
+
 const MarkdownReport = require('./markdownReport');
 
 /**

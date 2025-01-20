@@ -195,7 +195,7 @@ jobs:
               uses: actions/github-script@v7
               with:
                   script: |
-                      const changelog = require('.github/workflows/changelog/changelog.js')
+                      const changelog = require('.github/workflows/releaseNotes/releaseNotes.js')
                       await changelog.createRelease({
                         github: github,
                         context: context,
@@ -211,7 +211,7 @@ jobs:
               uses: actions/github-script@v7
               with:
                   script: |
-                      const changelog = require('.github/workflows/changelog/changelog.js')
+                      const changelog = require('.github/workflows/releaseNotes/releaseNotes.js')
                       await changelog.publishRelease({
                         github: github,
                         context: context,
