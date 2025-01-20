@@ -53,7 +53,7 @@ jobs:
               uses: actions/checkout@v4
               with:
                   token: ${{ secrets.LOKALISE_PAT }}
-                  fetch-depth: 1
+                  fetch-depth: 0
                   lfs: false
 
             - name: Determine version tag
@@ -139,7 +139,6 @@ jobs:
                   GITHUB_REF_NAME: ${{ github.ref_name }}
               run: |
                   # 1. Switch to dev
-                  echo "1. Switch to dev"
                   git checkout dev
 
                   # 2. Save dev's version before merge
