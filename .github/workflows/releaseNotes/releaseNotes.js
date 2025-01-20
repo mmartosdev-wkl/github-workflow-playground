@@ -471,7 +471,7 @@ async function publishRelease({ github, context, tagName, oldTagName }) {
   const tagNameWithoutPatch = removePatch(tagName);
   const baseRef = `release_${tagNameWithoutPatch}`;
 
-  const lastTagName = getLastReleaseTagName(tagNameWithoutPatch);
+  const lastTagName = await getLastReleaseTagName(tagNameWithoutPatch);
 
   // Gather commits/PRs from oldTagName -> baseRef
   const { lastVersionHashAndDate, currentVersionHashAndDate, pullRequests } =
