@@ -54,8 +54,8 @@ jobs:
               with:
                   token: ${{ secrets.LOKALISE_PAT }}
                   ref: ${{ steps.base_branch.outputs.base_branch }}
-                  lfs: true
-                  fetch-depth: 0
+                  fetch-depth: 1
+                  lfs: false
 
             - name: Determine version tag
               id: version_tag
@@ -136,6 +136,8 @@ jobs:
                   git push origin "${{ steps.create_branch.outputs.new_branch }}"
 
             - name: Update dev branch
+              env:
+                  GITHUB_REF_NAME: ${{ github.ref_name }}
               run: |
                   # 1. Switch to dev
                   git checkout dev
@@ -165,30 +167,42 @@ jobs:
                     fi
                   fi
                   
-                  # 5. Check if version changed; only bump dev if it has NOT changed
-                  DEV_VERSION_AFTER=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
-                  CODE_AFTER=$(grep '^versionCode=' app/gradle.properties | cut -d'=' -f2)
-                  
-                  # If dev's version is still the same as before the merge, do a minor bump
-                  if [ "$DEV_VERSION_BEFORE" = "$DEV_VERSION_AFTER" ]; then
-                    echo "Version in dev did not change after merging; bumping dev minor version."
-                  
-                    IFS='.' read -r MAJOR MINOR PATCH <<< "$DEV_VERSION_AFTER"
+                  # 5. If we're doing a release cut, bump minor version and versionCode
+                  if [ "$GITHUB_REF_NAME" == "dev" }} ]; then
+                    # Get current version tag and code
+                    CURRENT_VERSION_TAG=$(grep '^versionName=' app/gradle.properties | cut -d'=' -f2)
+                    CURRENT_VERSION_CODE=$(grep '^versionCode=' app/gradle.properties | cut -d'=' -f2)
+
+                    # Bump version tag
+                    IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION_TAG"
                     NEW_MINOR=$((MINOR + 1))
                     NEW_PATCH=0
-                    NEW_VERSION="${MAJOR}.${NEW_MINOR}.${NEW_PATCH}"
-                    NEW_CODE=$((CODE_AFTER + 1))
-                  
-                    sed -i "s/^versionName=.*/versionName=${NEW_VERSION}/" app/gradle.properties
-                    sed -i "s/^versionCode=.*/versionCode=${NEW_CODE}/" app/gradle.properties
+                    NEW_VERSION_TAG="$MAJOR.$NEW_MINOR.$NEW_PATCH"
+              
+                    # Bump version code
+                    NEW_VERSION_CODE=$((CURRENT_VERSION_CODE + 1))
+              
+                    # Update gradle.properties file
+                    sed -i "s/^versionName=.*/versionName=${NEW_VERSION_TAG}/" app/gradle.properties
+                    sed -i "s/^versionCode=.*/versionCode=${NEW_VERSION_CODE}/" app/gradle.properties
                     git add app/gradle.properties
-                    git commit -m "Bump version: ${NEW_VERSION}-${NEW_CODE}" || echo "No changes to commit."
+                    git commit -m "Bump version: $NEW_VERSION_TAG-$NEW_VERSION_CODE"
+
+                  # 5. If not, versionName has already being bumped, so only bump versionCode
                   else
-                    echo "Dev version changed due to merge; skipping minor bump."
-                  fi
-                  
-                  # 6. Push dev
-                  git push origin dev
+                    # Get current version code
+                    CURRENT_VERSION_CODE=$(grep '^versionCode=' app/gradle.properties | cut -d'=' -f2)
+              
+                    # Bump version code
+                    NEW_VERSION_CODE=$((CURRENT_VERSION_CODE + 1))
+              
+                    # Update gradle.properties file
+                    sed -i "s/^versionName=.*/versionName=${DEV_VERSION_BEFORE}/" app/gradle.properties
+                    sed -i "s/^versionCode=.*/versionCode=${NEW_VERSION_CODE}/" app/gradle.properties
+                    git add app/gradle.properties
+                    git commit -m "Bump version: DEV_VERSION_BEFORE-$NEW_VERSION_CODE"
+                 fi
+                 git push origin dev
 
             - name: Publish release draft (for dev)
               if: github.ref_name == 'dev'
