@@ -101,9 +101,16 @@ async function getReleaseDraftId({ github, context }) {
   return result;
 }
 
+function escapeRegExp(str) {
+  // Escapes any special characters in a string to make it safe for use in a regular expression
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+
 async function getLastReleaseTagName({ github, context, lastTagNameWithoutPatch }) {
   console.log(`<-- getLastReleaseTagName`);
-  const regex = new RegExp(`^${lastTagNameWithoutPatch}\\.\\d+$`);
+  const escapedBaseTag = escapeRegExp(lastTagNameWithoutPatch);
+  const regex = new RegExp(`^${escapedBaseTag}\\.\\d+$`);
   const releases = await github.paginate(
     github.rest.repos.listReleases,
     {
