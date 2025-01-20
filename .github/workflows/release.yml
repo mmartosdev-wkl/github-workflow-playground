@@ -121,13 +121,13 @@ jobs:
                     echo "version_code=${VERSION_CODE}" >> "$GITHUB_OUTPUT"
                   fi
 
-#            - name: Commit changes
-#              run: |
-#                  git config user.email "wikiloctech@gmail.com"
-#                  git config user.name "wikiloc-forest"
-#                  git add app/gradle.properties
-#                  git commit -m "build: ${{ steps.version_tag.outputs.version_tag }}-${{ steps.bump_version.outputs.version_code }}" || echo "No changes to commit."
-#
+            - name: Commit changes
+              run: |
+                  git config user.email "wikiloctech@gmail.com"
+                  git config user.name "wikiloc-forest"
+                  git add app/gradle.properties
+                  git commit -m "build: ${{ steps.version_tag.outputs.version_tag }}-${{ steps.bump_version.outputs.version_code }}" || echo "No changes to commit."
+
 #            - name: Push Release Branch
 #              run: |
 #                  if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
