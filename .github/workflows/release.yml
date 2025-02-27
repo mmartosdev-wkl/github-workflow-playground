@@ -27,7 +27,8 @@ jobs:
               github.event_name == 'pull_request' &&
               github.event.action == 'closed' &&
               github.event.pull_request.merged == true &&
-              startsWith(github.event.pull_request.base.ref, 'release_')
+              startsWith(github.event.pull_request.base.ref, 'release_') &&
+              contains(github.event.pull_request.labels.*.name, 'ci')
             )
             || github.event_name == 'workflow_dispatch'
 
