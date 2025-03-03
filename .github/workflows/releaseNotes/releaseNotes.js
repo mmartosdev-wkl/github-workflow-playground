@@ -529,4 +529,5 @@ async function publishRelease({ github, context, tagName}) {
 module.exports = {
   createRelease,
   publishRelease,
+  buildReleaseBody,
 };
