@@ -51,13 +51,13 @@ jobs:
                         context: context,
                         tagName: process.env.CURRENT_VERSION_TAG,
                       });
-                      git checkout dev
                       fs.writeFileSync("CHANGELOG.md", releaseNotes, 'utf8');
 
             - name: commit CHANGELOG.md changes
               run: |
                   git config user.email "wikiloctech@gmail.com"
                   git config user.name "wikiloc-forest"
+                  git checkout dev
                   git add CHANGELOG.md
                   git commit -m "update CHANGELOG.md" || echo "No changes to commit."                      
 
