@@ -51,6 +51,7 @@ jobs:
                         context: context,
                         tagName: process.env.CURRENT_VERSION_TAG,
                       });
+                      git checkout dev
                       fs.writeFileSync("CHANGELOG.md", releaseNotes, 'utf8');
 
             - name: commit CHANGELOG.md changes
