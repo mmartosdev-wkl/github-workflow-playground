@@ -527,8 +527,35 @@ async function publishRelease({ github, context, tagName}) {
   console.log(`<--> publishRelease`);
 }
 
+async function createReleaseBody({ github, context, tagName}) {
+  // 1. Find last version tag that matches x.y.0
+  console.log(`--> createReleaseBody`);
+  const lastVersionTag = await getLastVersionTag({ github, context });
+
+  // 2. Gather commits and PRs from lastVersionTag -> dev
+  const { lastVersionHashAndDate, currentVersionHashAndDate, pullRequests } =
+    await gatherPullRequestsBetweenRefs(
+      github,
+      context,
+      `refs/tags/${lastVersionTag}`,
+      'refs/heads/dev',
+      'dev'
+    );
+
+  // 3. Build the release body
+  const body = buildReleaseBody(
+    `Version ${tagName}`,
+    pullRequests,
+    context.payload.repository.html_url,
+    lastVersionHashAndDate.hash,
+    currentVersionHashAndDate.hash
+  );
+  console.log(`<--> createReleaseBody`);
+  return body;
+}
+
 module.exports = {
   createRelease,
   publishRelease,
-  buildReleaseBody,
+  createReleaseBody,
 };

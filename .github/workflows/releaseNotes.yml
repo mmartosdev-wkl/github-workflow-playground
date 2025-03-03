@@ -46,11 +46,10 @@ jobs:
                   script: |
                       const fs = require('fs');
                       const changelog = require('.github/workflows/releaseNotes/releaseNotes.js')
-                      const releaseNotes = await changelog.buildReleaseBody({
+                      const releaseNotes = await changelog.createReleaseBody({
                         github: github,
                         context: context,
                         tagName: process.env.CURRENT_VERSION_TAG,
-                        isDraft: true,
                       });
                       fs.writeFileSync("CHANGELOG.md", releaseNotes, 'utf8');
 
