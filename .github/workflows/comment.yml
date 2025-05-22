@@ -30,7 +30,8 @@ jobs:
                 with:
                     script: |
                         const number = context.issue.number;
-                        console.log(context);
+                        console.info("context:");
+                        console.info(context);
                         const response = await github.rest.pulls.get({
                             owner: context.repo.owner,
                             repo: context.repo.name,
