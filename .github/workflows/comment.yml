@@ -1,58 +1,71 @@
-name: Comment-based Workflow
+name: Comment-based workflow
 
 on:
     issue_comment:
-        types: [ created ]
+        types: [created]
+
+# Minimal permissions the job needs
+permissions:
+    issues: write          # delete the comment
+    pull-requests: read    # read PR metadata
+    contents: write        # push screenshots back to branch
 
 jobs:
-    comment-job:
+    handle-comment:
+        # Only run if the comment was left on a PR, not on a regular issue
+        if: github.event.issue.pull_request
         runs-on: ubuntu-latest
 
         steps:
-            -   name: Set up Node.js
-                uses: actions/setup-node@v3
-                with:
-                    node-version: '18'
+            # 1️⃣  check out the PR branch so we can commit back to it
+            - name: Check out repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0       # we need full history to push
 
-            -   name: Remove triggering comment
-                uses: actions/github-script@v6
-                with:
-                    script: |
-                        core.info("context:");
-                        core.info(JSON.stringify(context, null, 2));
-#                        await github.rest.issues.deleteComment({
-#                            owner: context.repo.owner,
-#                            repo: context.repo.name,
-#                            comment_id: context.payload.comment.id,
-#                        })
+            # 2️⃣  set up Node 18 with automatic npm cache
+            - name: Set up Node.js 18
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 18
+                  cache: npm
 
-            -   name: Get branch name
-                id: branch
-                uses: actions/github-script@v6
-                with:
-                    script: |
-                        const number = context.issue.number;
-                        core.info("context:");
-                        core.info(JSON.stringify(context, null, 2));
-                        const response = await github.rest.pulls.get({
-                            owner: context.repo.owner,
-                            repo: context.repo.name,
-                            pull_number: number
-                        });
-                        core.setOutput("ref", response.data.head.ref);
+            # 3️⃣  delete the triggering comment
+            - name: Delete triggering comment
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const { owner, repo } = context.repo;
+                      const commentId = context.payload.comment.id;
+                      
+                      core.info(`Deleting comment ${commentId} in ${owner}/${repo}`);
+                      await github.rest.issues.deleteComment({
+                        owner,
+                        repo,
+                        comment_id: commentId
+                      });
 
-            -   name: Commit and push updated screenshots
-                run: |
-                    node -e "
-                    console.log('---- github');
-                    console.log(process.env.GITHUB_EVENT_ISSUE);
-                    console.log('---- github.event.issue');
-                    console.log(process.env.GITHUB_EVENT_ISSUE);
-                    console.log('---- github.event.issue.pull_request');
-                    console.log(process.env.GITHUB_EVENT_ISSUE_PULL_REQUEST);
-                    "
-                    echo ${{ steps.branch.outputs.ref }}
-                env:
-                    GITHUB: ${{ toJson(github) }}
-                    GITHUB_EVENT_ISSUE: ${{ toJson(github.event.issue) }}
-                    GITHUB_EVENT_ISSUE_PULL_REQUEST: ${{ toJson(github.event.issue.pull_request) }}
+            # 4️⃣  capture the head branch of the PR so we can push to it later
+            - name: Get PR head branch
+              id: pr
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const { owner, repo } = context.repo;
+                      const prNumber = context.issue.number;
+                      
+                      const { data: pr } = await github.rest.pulls.get({
+                        owner,
+                        repo,
+                        pull_number: prNumber
+                      });
+                      
+                      core.setOutput('branch', pr.head.ref);   // e.g. "feature/foo"
+
+            # 5️⃣  generate screenshots (replace with your real command),
+            #      commit, and push them to the PR branch
+            - name: Commit and push updated screenshots
+              run: |
+                  echo $BRANCH
+              env:
+                  BRANCH: ${{ steps.pr.outputs.branch }}
