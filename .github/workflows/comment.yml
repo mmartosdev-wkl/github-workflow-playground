@@ -14,15 +14,27 @@ jobs:
                 with:
                     node-version: '18'
 
-            -   name: Get PR details
-                id: pr
-                env:
-                    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                run: |
-                    number="${{ github.event.issue.number }}"
-                    gh api repos/${{ github.repository }}/pulls/$number >pr.json
-                    echo "branch=$(jq -r .head.ref pr.json)"     >>"$GITHUB_OUTPUT"
-                    echo "remote=$(jq -r .head.repo.full_name pr.json)" >>"$GITHUB_OUTPUT"
+            -   name: Remove triggering comment
+                uses: actions/github-script@v6
+                with:
+                    script: |
+                        github.rest.issues.deleteComment({
+                            comment_id: context.payload.comment.id,
+                        })
+
+            -   name: Get branch name
+                id: branch
+                uses: actions/github-script@v6
+                with:
+                    script: |
+                        const number = context.issue.number;
+                        const response = await github.rest.pulls.get({
+                            owner: context.repo.owner,
+                            repo: context.repo.name,
+                            pull_number: number
+                        });
+                        core.setOutput("ref", response.data.head.ref);
+
             -   name: Commit and push updated screenshots
                 run: |
                     node -e "
@@ -33,8 +45,7 @@ jobs:
                     console.log('---- github.event.issue.pull_request');
                     console.log(process.env.GITHUB_EVENT_ISSUE_PULL_REQUEST);
                     "
-                    echo ${{ steps.pr.outputs.remote }}
-                    echo ${{ steps.pr.outputs.branch }}
+                    echo ${{ steps.branch.outputs.ref }}
                 env:
                     GITHUB: ${{ toJson(github) }}
                     GITHUB_EVENT_ISSUE: ${{ toJson(github.event.issue) }}
