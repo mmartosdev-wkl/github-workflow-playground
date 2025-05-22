@@ -14,12 +14,12 @@ jobs:
                 with:
                     node-version: '18'
 
-#            -   name: Remove triggering comment
-#                uses: actions/github-script@v6
-#                with:
-#                    script: |
-#                        core.info("context:");
-#                        core.info(JSON.stringify(context, null, 2));
+            -   name: Remove triggering comment
+                uses: actions/github-script@v6
+                with:
+                    script: |
+                        core.info("context:");
+                        core.info(JSON.stringify(context, null, 2));
 #                        await github.rest.issues.deleteComment({
 #                            owner: context.repo.owner,
 #                            repo: context.repo.name,
@@ -32,6 +32,8 @@ jobs:
                 with:
                     script: |
                         const number = context.issue.number;
+                        core.info("context:");
+                        core.info(JSON.stringify(context, null, 2));
                         const response = await github.rest.pulls.get({
                             owner: context.repo.owner,
                             repo: context.repo.name,
