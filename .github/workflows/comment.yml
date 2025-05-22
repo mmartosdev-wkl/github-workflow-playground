@@ -32,12 +32,6 @@ jobs:
                         const number = context.issue.number;
                         core.info("context:");
                         core.info(context);
-                        const response = await github.rest.pulls.get({
-                            owner: context.repo.owner,
-                            repo: context.repo.name,
-                            pull_number: number
-                        });
-                        core.setOutput("ref", response.data.head.ref);
 
             -   name: Commit and push updated screenshots
                 run: |
