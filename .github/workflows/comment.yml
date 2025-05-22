@@ -1,0 +1,17 @@
+name: Comment-based Workflow
+
+on:
+    issue_comment:
+        types: [created]
+
+jobs:
+    comment-job:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Commit and push updated screenshots
+              run: |
+                echo ---- github.event.issue
+                echo ${{ github.event.issue }}
+                echo ---- github.event.issue.pull_request
+                echo ${{ github.event.issue.pull_request }}
