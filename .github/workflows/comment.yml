@@ -7,7 +7,7 @@ on:
 # Minimal permissions the job needs
 permissions:
     issues: write          # delete the comment
-    pull-requests: read    # read PR metadata
+    pull-requests: write   # read PR metadata
     contents: write        # push screenshots back to branch
 
 jobs:
