@@ -18,7 +18,9 @@ jobs:
                 uses: actions/github-script@v6
                 with:
                     script: |
-                        github.rest.issues.deleteComment({
+                        await github.rest.issues.deleteComment({
+                            owner: context.repo.owner,
+                            repo: context.repo.name,
                             comment_id: context.payload.comment.id,
                         })
 
