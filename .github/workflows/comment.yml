@@ -14,17 +14,17 @@ jobs:
                 with:
                     node-version: '18'
 
-            -   name: Remove triggering comment
-                uses: actions/github-script@v6
-                with:
-                    script: |
-                        core.info("context:");
-                        core.info(JSON.stringify(context, null, 2));
-                        await github.rest.issues.deleteComment({
-                            owner: context.repo.owner,
-                            repo: context.repo.name,
-                            comment_id: context.payload.comment.id,
-                        })
+#            -   name: Remove triggering comment
+#                uses: actions/github-script@v6
+#                with:
+#                    script: |
+#                        core.info("context:");
+#                        core.info(JSON.stringify(context, null, 2));
+#                        await github.rest.issues.deleteComment({
+#                            owner: context.repo.owner,
+#                            repo: context.repo.name,
+#                            comment_id: context.payload.comment.id,
+#                        })
 
             -   name: Get branch name
                 id: branch
