@@ -23,13 +23,6 @@ jobs:
               with:
                   fetch-depth: 0       # we need full history to push
 
-            # 2️⃣  set up Node 18 with automatic npm cache
-            - name: Set up Node.js 18
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 18
-                  cache: npm
-
             # 3️⃣  delete the triggering comment
             - name: Delete triggering comment
               uses: actions/github-script@v7
