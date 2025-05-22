@@ -2,16 +2,26 @@ name: Comment-based Workflow
 
 on:
     issue_comment:
-        types: [created]
+        types: [ created ]
 
 jobs:
     comment-job:
         runs-on: ubuntu-latest
 
         steps:
-            - name: Commit and push updated screenshots
-              run: |
-                echo ---- github.event.issue
-                echo ${{ github.event.issue }}
-                echo ---- github.event.issue.pull_request
-                echo ${{ github.event.issue.pull_request }}
+            -   name: Set up Node.js
+                uses: actions/setup-node@v3
+                with:
+                    node-version: '18'
+                
+            -   name: Commit and push updated screenshots
+                run: |
+                    node -e "
+                    console.log('---- github.event.issue');
+                    console.log(process.env.GITHUB_EVENT_ISSUE);
+                    console.log('---- github.event.issue.pull_request');
+                    console.log(process.env.GITHUB_EVENT_ISSUE_PULL_REQUEST);
+                    "
+                env:
+                    GITHUB_EVENT_ISSUE: ${{ toJson(github.event.issue) }}
+                    GITHUB_EVENT_ISSUE_PULL_REQUEST: ${{ toJson(github.event.issue.pull_request) }}
