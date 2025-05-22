@@ -17,11 +17,14 @@ jobs:
             -   name: Commit and push updated screenshots
                 run: |
                     node -e "
+                    console.log('---- github');
+                    console.log(process.env.GITHUB_EVENT_ISSUE);
                     console.log('---- github.event.issue');
                     console.log(process.env.GITHUB_EVENT_ISSUE);
                     console.log('---- github.event.issue.pull_request');
                     console.log(process.env.GITHUB_EVENT_ISSUE_PULL_REQUEST);
                     "
                 env:
+                    GITHUB: ${{ toJson(github) }}
                     GITHUB_EVENT_ISSUE: ${{ toJson(github.event.issue) }}
                     GITHUB_EVENT_ISSUE_PULL_REQUEST: ${{ toJson(github.event.issue.pull_request) }}
