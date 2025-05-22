@@ -19,7 +19,7 @@ jobs:
                 with:
                     script: |
                         core.info("context:");
-                        core.info(toJson(context));
+                        core.info(JSON.stringify(context, null, 2));
                         await github.rest.issues.deleteComment({
                             owner: context.repo.owner,
                             repo: context.repo.name,
