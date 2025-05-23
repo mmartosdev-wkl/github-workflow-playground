@@ -82,7 +82,7 @@ async function dispatchWorkflows({ github, context, commentId, commentBody }) {
         Actions → “...” menu (e.g. `161335`) */
     workflow_id: "onDemandWorkflow.yml",
     /** branch, tag, or full SHA that the called workflow should run on */
-    ref: pr.head.sha,
+    ref: pr.head.ref,
     /* optional, declared in the target workflow’s `on: workflow_dispatch: inputs:` */
     inputs: {
       tasks: compatibleTasks,
