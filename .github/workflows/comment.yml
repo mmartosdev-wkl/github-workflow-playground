@@ -29,7 +29,7 @@ jobs:
                         await dispatcher.dispatchWorkflows({
                             github: github,
                             context: context,
-                            comment: ${{ github.event.comment.body }},
+                            comment: context.payload.comment.body,
                         });
         
 
