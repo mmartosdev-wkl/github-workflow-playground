@@ -35,4 +35,4 @@ jobs:
 
             -   name: Build with Gradle
                 run: |
-                    echo ${{ inputs.tasks }}
+                    echo ${{ inputs.taskNames }}
