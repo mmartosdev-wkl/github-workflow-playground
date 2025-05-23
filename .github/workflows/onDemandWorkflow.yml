@@ -1,9 +1,10 @@
 name: On-demand Workflow
 
 on:
-    workflow_call:
+    workflow_dispatch:
         inputs:
             tasks:
+                description: "Tasks to run"
                 required: true
                 type: array
 
