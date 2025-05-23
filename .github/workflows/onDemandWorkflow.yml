@@ -36,6 +36,4 @@ jobs:
 
             -   name: Build with Gradle
                 run: |
-                    for taskString in "${{ inputs.tasks[@] }}"; do
-                        ./gradlew $taskString --parallel --scan
-                    done
+                    echo ${{ inputs.tasks[@] }}
