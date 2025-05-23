@@ -13,6 +13,7 @@ jobs:
             (startsWith(github.event.comment.body, 'runChecks') || github.event.comment.body == 'recordScreenshots')
         permissions:
             pull-requests: write
+            actions: write
         steps:
             -   name: Checkout codebase
                 uses: actions/checkout@v4
