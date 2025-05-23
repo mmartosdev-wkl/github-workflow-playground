@@ -44,7 +44,7 @@ async function dispatchWorkflows({ github, context, commentId, commentBody }) {
     compatibleTasks.push(
       tasksToRun.filter(task => task !== "verifyScreenshotTests")
     );
-    compatibleTasks.push([verifyScreenshotTests]);
+    compatibleTasks.push(["verifyScreenshotTests"]);
   } else {
     compatibleTasks.push(tasksToRun);
   }
