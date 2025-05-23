@@ -74,22 +74,22 @@ async function dispatchWorkflows({ github, context, commentId, commentBody }) {
   // Step 4: Ensure task compatibility
   const compatibleTasks = ensureCompatibleTasks(tasksToRun);
 
-  console.log(`compatibleTasks: ${JSON.stringify(compatibleTasks)}`);
+  // console.log(`compatibleTasks: ${JSON.stringify(compatibleTasks)}`);
 
-  // Step 5: Dispatch workflows
-  await github.rest.actions.createWorkflowDispatch({
-    owner: owner,
-    repo:  repo,
-    /** file name *or* numeric ID that you see in the URL on the
-        Actions → “...” menu (e.g. `161335`) */
-    workflow_id: "163865713",
-    /** branch, tag, or full SHA that the called workflow should run on */
-    ref: pr.head.ref,
-    // /* optional, declared in the target workflow’s `on: workflow_dispatch: inputs:` */
-    // inputs: {
-    //   tasks: JSON.stringify(compatibleTasks),
-    // }
-  });
+  // // Step 5: Dispatch workflows
+  // await github.rest.actions.createWorkflowDispatch({
+  //   owner: owner,
+  //   repo:  repo,
+  //   /** file name *or* numeric ID that you see in the URL on the
+  //       Actions → “...” menu (e.g. `161335`) */
+  //   workflow_id: "163865713",
+  //   /** branch, tag, or full SHA that the called workflow should run on */
+  //   ref: pr.head.ref,
+  //   // /* optional, declared in the target workflow’s `on: workflow_dispatch: inputs:` */
+  //   // inputs: {
+  //   //   tasks: JSON.stringify(compatibleTasks),
+  //   // }
+  // });
 }
 
 module.exports = {
