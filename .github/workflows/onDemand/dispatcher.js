@@ -74,7 +74,7 @@ async function dispatchWorkflows({ github, context, commentId, commentBody }) {
   // Step 4: Ensure task compatibility
   const compatibleTasks = ensureCompatibleTasks(tasksToRun);
 
-  // console.log(`compatibleTasks: ${JSON.stringify(compatibleTasks)}`);
+  console.log(`compatibleTasks: ${JSON.stringify(compatibleTasks)}`);
 
   // // Step 5: Dispatch workflows
   // await github.rest.actions.createWorkflowDispatch({
