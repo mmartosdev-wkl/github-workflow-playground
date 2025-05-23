@@ -16,7 +16,7 @@ async function dispatchWorkflows({ github, context, commentId, commentBody }) {
     pull_number: prNumber
   });
 
-  console.log('PR Data\n' + pr);
+  console.log('PR Data\n' + JSON.stringify(pr));
 }
 
 module.exports = {
