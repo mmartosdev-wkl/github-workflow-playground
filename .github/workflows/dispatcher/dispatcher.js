@@ -1,8 +1,8 @@
 async function dispatchWorkflows({ github, context, commentId, commentBody }) {
   // Remove comment
   await github.rest.issues.deleteComment({
-    owner: owner,
-    repo: repo,
+    owner: context.repo.owner,
+    repo: context.repo.repo,
     comment_id: commentId,
   });
 }
