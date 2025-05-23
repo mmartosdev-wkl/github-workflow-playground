@@ -3,7 +3,7 @@ name: On-demand Workflow
 on:
     workflow_dispatch:
         inputs:
-            tasks:
+            taskNames:
                 description: 'Array with lists of tasks to run'
                 required: true
 
