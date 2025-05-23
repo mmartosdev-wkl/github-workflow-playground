@@ -29,7 +29,8 @@ jobs:
                         await dispatcher.dispatchWorkflows({
                             github: github,
                             context: context,
-                            comment: context.payload.comment.body,
+                            commentId: context.payload.comment.id, 
+                            commentBody: context.payload.comment.body,
                         });
         
 
