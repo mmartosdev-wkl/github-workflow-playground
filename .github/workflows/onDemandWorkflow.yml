@@ -3,9 +3,9 @@ name: On-demand Workflow
 on:
     workflow_dispatch:
         inputs:
-            taskNames:
+            gradle_tasks:
                 description: 'Array with lists of tasks to run'
-                required: true
+                required: false
 
 jobs:
     onDemandRunner:
@@ -35,4 +35,4 @@ jobs:
 
             -   name: Build with Gradle
                 run: |
-                    echo ${{ inputs.taskNames }}
+                    echo ${{ inputs.gradle_tasks }}
