@@ -85,10 +85,10 @@ async function dispatchWorkflows({ github, context, commentId, commentBody }) {
     workflow_id: "163865713",
     /** branch, tag, or full SHA that the called workflow should run on */
     ref: pr.head.ref,
-    /* optional, declared in the target workflow’s `on: workflow_dispatch: inputs:` */
-    inputs: {
-      tasks: JSON.stringify(compatibleTasks),
-    }
+    // /* optional, declared in the target workflow’s `on: workflow_dispatch: inputs:` */
+    // inputs: {
+    //   tasks: JSON.stringify(compatibleTasks),
+    // }
   });
 }
 
