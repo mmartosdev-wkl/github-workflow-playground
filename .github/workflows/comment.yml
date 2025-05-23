@@ -8,8 +8,10 @@ jobs:
     compilationCheck:
         name: Compilation Check (on-demand)
         runs-on: ubuntu-latest
-        if: ${{ github.event.issue.pull_request && startsWith(github.event.comment.body, 'runChecks') && contains(github.event.comment.body, 'compile') }}
-
+        if: |
+            github.event.issue.pull_request && 
+            (startsWith(github.event.comment.body, 'runChecks') || github.event.comment.body == 'runChecks') && 
+            contains(github.event.comment.body, 'compile')
         permissions:
             pull-requests: write
 
@@ -47,7 +49,10 @@ jobs:
     codeAnalysis:
         name: Static Code Analysis (on-demand)
         runs-on: ubuntu-latest
-        if: ${{ github.event.issue.pull_request && startsWith(github.event.comment.body, 'runChecks') && contains(github.event.comment.body, 'detekt') }}
+        if: |
+            github.event.issue.pull_request && 
+            (startsWith(github.event.comment.body, 'runChecks') || github.event.comment.body == 'runChecks') && 
+            contains(github.event.comment.body, 'detekt') 
 
         permissions:
             pull-requests: write
@@ -86,7 +91,10 @@ jobs:
     unitTests:
         name: Run Unit Tests (on-demand)
         runs-on: ubuntu-latest
-        if: ${{ github.event.issue.pull_request && startsWith(github.event.comment.body, 'runChecks') && (contains(github.event.comment.body, 'unitTests') || contains(github.event.comment.body, 'screenshots')) }}
+        if: |
+            github.event.issue.pull_request && 
+            (startsWith(github.event.comment.body, 'runChecks') || github.event.comment.body == 'runChecks') && 
+            (contains(github.event.comment.body, 'unitTests') || contains(github.event.comment.body, 'screenshots') 
 
         permissions:
             pull-requests: write
