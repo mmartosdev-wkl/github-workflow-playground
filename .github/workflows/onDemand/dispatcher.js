@@ -80,7 +80,7 @@ async function dispatchWorkflows({ github, context, commentId, commentBody }) {
     repo:  repo,
     /** file name *or* numeric ID that you see in the URL on the
         Actions → “...” menu (e.g. `161335`) */
-    workflow_id: ".github/workflows/onDemandWorkflow.yml",
+    workflow_id: "163865713",
     /** branch, tag, or full SHA that the called workflow should run on */
     ref: pr.head.ref,
     /* optional, declared in the target workflow’s `on: workflow_dispatch: inputs:` */
