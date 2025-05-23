@@ -74,8 +74,20 @@ async function dispatchWorkflows({ github, context, commentId, commentBody }) {
   // Step 4: Ensure task compatibility
   const compatibleTasks = ensureCompatibleTasks(tasksToRun);
 
-  console.log('Resolved Tasks\n', JSON.stringify(compatibleTasks));
-  console.log('PR Data\n' + JSON.stringify(pr));
+  // Step 5: Dispatch workflows
+  await octokit.rest.actions.createWorkflowDispatch({
+    owner: owner,
+    repo:  repo,
+    /** file name *or* numeric ID that you see in the URL on the
+        Actions → “...” menu (e.g. `161335`) */
+    workflow_id: "onDemand/onDemandWorkflow.yml",
+    /** branch, tag, or full SHA that the called workflow should run on */
+    ref: pr.head.sha,
+    /* optional, declared in the target workflow’s `on: workflow_dispatch: inputs:` */
+    inputs: {
+      tasks: compatibleTasks,
+    }
+  });
 }
 
 module.exports = {
