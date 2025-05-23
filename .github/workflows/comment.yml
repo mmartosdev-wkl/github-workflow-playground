@@ -5,6 +5,23 @@ on:
         types: [created]
 
 jobs:
+    logs:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Set up Node.js
+                uses: actions/setup-node@v3
+                with:
+                    node-version: '18'
+
+            -   name: Log full context
+                run: |
+                    node -e "
+                    console.log('---- github');
+                    console.log(process.env.GITHUB_JSON);
+                    "
+                env:
+                    GITHUB_JSON: ${{ toJson(github) }}
+
     compilationCheck:
         name: Compilation Check (on-demand)
         runs-on: ubuntu-latest
