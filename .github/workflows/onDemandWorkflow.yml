@@ -2,11 +2,6 @@ name: On-demand Workflow
 
 on:
     workflow_dispatch:
-        inputs:
-            tasks:
-                description: "Tasks to run"
-                required: true
-                type: array
 
 jobs:
     onDemandRunner:
