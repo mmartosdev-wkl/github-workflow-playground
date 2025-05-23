@@ -94,7 +94,7 @@ jobs:
         if: |
             github.event.issue.pull_request && 
             (startsWith(github.event.comment.body, 'runChecks') || github.event.comment.body == 'runChecks') && 
-            (contains(github.event.comment.body, 'unitTests') || contains(github.event.comment.body, 'screenshots') 
+            (contains(github.event.comment.body, 'unitTests') || contains(github.event.comment.body, 'screenshots')) 
 
         permissions:
             pull-requests: write
