@@ -10,8 +10,8 @@ jobs:
         runs-on: ubuntu-latest
         if: |
             github.event.issue.pull_request && 
-            (startsWith(github.event.comment.body, 'runChecks') || github.event.comment.body == 'runChecks') && 
-            contains(github.event.comment.body, 'compile')
+            startsWith(github.event.comment.body, 'runChecks') && 
+            (contains(github.event.comment.body, 'compile') || github.event.comment.body == 'runChecks')
         permissions:
             pull-requests: write
 
@@ -52,8 +52,8 @@ jobs:
         runs-on: ubuntu-latest
         if: |
             github.event.issue.pull_request && 
-            (startsWith(github.event.comment.body, 'runChecks') || github.event.comment.body == 'runChecks') && 
-            contains(github.event.comment.body, 'detekt') 
+            startsWith(github.event.comment.body, 'runChecks') && 
+            (contains(github.event.comment.body, 'detekt') || github.event.comment.body == 'runChecks'))
 
         permissions:
             pull-requests: write
@@ -95,8 +95,8 @@ jobs:
         runs-on: ubuntu-latest
         if: |
             github.event.issue.pull_request && 
-            (startsWith(github.event.comment.body, 'runChecks') || github.event.comment.body == 'runChecks') && 
-            (contains(github.event.comment.body, 'unitTests') || contains(github.event.comment.body, 'screenshots')) 
+            startsWith(github.event.comment.body, 'runChecks') && 
+            (contains(github.event.comment.body, 'unitTests') || contains(github.event.comment.body, 'screenshots') || github.event.comment.body == 'runChecks')) 
 
         permissions:
             pull-requests: write
@@ -131,7 +131,7 @@ jobs:
                 uses: gradle/actions/setup-gradle@v4
 
             -   name: Execute unit tests
-                if: contains(github.event.comment.body, 'unitTests')
+                if: contains(github.event.comment.body, 'unitTests') || github.event.comment.body == 'runChecks')
                 continue-on-error: true
                 run: |
                     echo "Execute unit tests"
@@ -152,7 +152,7 @@ jobs:
                     exit 1
 
             -   name: Execute screenshot tests
-                if: contains(github.event.comment.body, 'screenshots')
+                if: contains(github.event.comment.body, 'screenshots') || github.event.comment.body == 'runChecks')
                 id: screenshot_tests
                 continue-on-error: true
                 run: |
