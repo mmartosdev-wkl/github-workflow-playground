@@ -1,24 +1,25 @@
-async function dispatchWorkflows({ github, context, commentId, commentBody }) {
-  const { owner, repo } = context.repo;
-
-  // Remove comment
+// Function to delete a comment
+async function deleteComment(github, owner, repo, commentId) {
   await github.rest.issues.deleteComment({
     owner: owner,
     repo: repo,
     comment_id: commentId,
   });
+}
 
-  // Get data relative to PR where the comment has been added -> pr.head.sha
-  const prNumber = context.issue.number;
+// Function to fetch PR data
+async function fetchPRData(github, owner, repo, prNumber) {
   const { data: pr } = await github.rest.pulls.get({
     owner,
     repo,
-    pull_number: prNumber
+    pull_number: prNumber,
   });
+  return pr;
+}
 
-  // Resolve which gradle tasks should be run
+// Function to resolve tasks based on commentBody
+function resolveTasks(commentBody) {
   let tasksToRun = [];
-  let compatibleTasks = [];
 
   if (commentBody === "recordScreenshots") {
     tasksToRun = ["recordScreenshotTests"];
@@ -39,7 +40,12 @@ async function dispatchWorkflows({ github, context, commentId, commentBody }) {
     }
   }
 
-  // Ensure compatibility of tasks
+  return tasksToRun;
+}
+
+// Function to ensure compatibility of tasks
+function ensureCompatibleTasks(tasksToRun) {
+  let compatibleTasks = [];
   if (tasksToRun.includes("unitTests") || tasksToRun.includes("allTests")) {
     compatibleTasks.push(
       tasksToRun.filter(task => task !== "verifyScreenshotTests")
@@ -48,6 +54,25 @@ async function dispatchWorkflows({ github, context, commentId, commentBody }) {
   } else {
     compatibleTasks.push(tasksToRun);
   }
+  return compatibleTasks;
+}
+
+// Main function dispatchWorkflows
+async function dispatchWorkflows({ github, context, commentId, commentBody }) {
+  const { owner, repo } = context.repo;
+
+  // Step 1: Remove comment
+  await deleteComment(github, owner, repo, commentId);
+
+  // Step 2: Fetch PR data
+  const prNumber = context.issue.number;
+  const pr = await fetchPRData(github, owner, repo, prNumber);
+
+  // Step 3: Resolve tasks
+  const tasksToRun = resolveTasks(commentBody);
+
+  // Step 4: Ensure task compatibility
+  const compatibleTasks = ensureCompatibleTasks(tasksToRun);
 
   console.log('Resolved Tasks\n', JSON.stringify(compatibleTasks));
   console.log('PR Data\n' + JSON.stringify(pr));
