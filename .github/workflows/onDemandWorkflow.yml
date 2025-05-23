@@ -1,11 +1,6 @@
 name: On-demand Workflow
 
 on:
-    workflow_call:
-            inputs:
-                tasks:
-                    required: true
-                    type: array    
     workflow_dispatch:
         inputs:
             tasks:
