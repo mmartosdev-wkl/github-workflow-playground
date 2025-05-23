@@ -12,6 +12,9 @@ jobs:
             github.event.issue.pull_request && 
             startsWith(github.event.comment.body, 'runChecks') && 
             (contains(github.event.comment.body, 'compile') || github.event.comment.body == 'runChecks')
+        concurrency:
+            group: compilationCheck-${{ github.workflow }}
+            cancel-in-progress: true
         permissions:
             pull-requests: write
 
@@ -54,7 +57,9 @@ jobs:
             github.event.issue.pull_request && 
             startsWith(github.event.comment.body, 'runChecks') && 
             (contains(github.event.comment.body, 'detekt') || github.event.comment.body == 'runChecks')
-
+        concurrency:
+            group: codeAnalysis-${{ github.workflow }}
+            cancel-in-progress: true
         permissions:
             pull-requests: write
 
@@ -97,7 +102,9 @@ jobs:
             github.event.issue.pull_request && 
             startsWith(github.event.comment.body, 'runChecks') && 
             (contains(github.event.comment.body, 'unitTests') || contains(github.event.comment.body, 'screenshots') || github.event.comment.body == 'runChecks')
-
+        concurrency:
+            group: unitTests-${{ github.workflow }}
+            cancel-in-progress: true
         permissions:
             pull-requests: write
 
@@ -173,11 +180,13 @@ jobs:
                     echo "Screenshot test failed for task: ${{ steps.screenshot_tests.outputs.failed_task }}" >> $GITHUB_STEP_SUMMARY
                     exit 1
 
-    record-screenshots:
+    recordScreenshots:
         name: Record Screenshots
         if: ${{ github.event.issue.pull_request && github.event.comment.body == 'recordScreenshots' }}
         runs-on: ubuntu-latest
-
+        concurrency:
+            group: recordScreenshots-${{ github.workflow }}
+            cancel-in-progress: true
         permissions:
             pull-requests: write
             contents: write
