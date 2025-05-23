@@ -14,6 +14,13 @@ jobs:
         permissions:
             pull-requests: write
         steps:
+            -   name: Checkout codebase
+                uses: actions/checkout@v4
+                with:
+                    fetch-depth: 1
+                    fetch-tags: false
+                    lfs: false
+
             -   name: Dispatch on-demand workflows
                 uses: actions/github-script@v7
                 with:
