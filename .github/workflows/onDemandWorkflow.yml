@@ -40,7 +40,6 @@ jobs:
                             ./gradlew $(echo $tasks | jq -r '.[]') --scan 2>&1 \
                             | tee >(cat >&3)
                         )
-                        gradle_exit_code=$?
                         exec 3>&-
                     
                         # Initialize variables with empty values
@@ -48,7 +47,7 @@ jobs:
                         echo "report_path=" >> $GITHUB_OUTPUT
                     
                         # Check the Gradle exit code
-                        if [ $gradle_exit_code -ne 0 ]; then
+                        if echo "$output" | grep -q "BUILD FAILED"; then
                             # Check if there's a failure message before attempting to parse it
                             if echo "$output" | grep -q "Execution failed for task"; then
                                 # Extract failed task only if the failure message exists
