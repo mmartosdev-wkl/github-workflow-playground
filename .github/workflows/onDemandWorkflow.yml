@@ -40,6 +40,7 @@ jobs:
                         await exec.exec('echo inputs');
                         await exec.exec('echo', core.getInput('gradle_tasks'));
                         core.info(core.getInput('gradle_tasks'));
+                        console.log(context);
 #                        const gradleTasks = JSON.parse(core.getInput('gradle_tasks'));
 #                        for (const tasks of gradleTasks) {
 #                            core.info(tasks);
