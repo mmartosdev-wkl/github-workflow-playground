@@ -33,6 +33,32 @@ jobs:
             -   name: Build with Gradle
                 run: |
                     echo '${{ inputs.gradle_tasks }}' | jq -c '.[]' | while read -r tasks; do
-                        ./gradlew $(echo $tasks | jq -r '.[]') --scan
+                        exec 3>&1
+                        output=$(
+                            ./gradlew $(echo $tasks | jq -r '.[]') --scan 2>&1 \
+                            | tee >(cat >&3)
+                        )
+                        exec 3>&-
+                        
+                        # Initialize variables with empty values
+                        echo "failed_task=" >> $GITHUB_OUTPUT
+                        echo "report_path=" >> $GITHUB_OUTPUT
+                        
+                        # Check if there's a failure message before attempting to parse it
+                        if echo "$output" | grep -q "Execution failed for task"; then
+                            # Extract failed task only if the failure message exists
+                            failed_task=$(echo "$output" | grep "Execution failed for task" | sed -E "s/.*task '(.*)'.*/\1/")
+                        
+                            # Extract report path and strip file:// prefix
+                            report_path=$(echo "$output" | grep -o "file:///.*\.html" | tac | head -n 1 | sed 's|file://||' | sed 's|/index.html$||' || echo "")                    
+                        
+                            # Update outputs only if we found the values
+                            if [ ! -z "$failed_task" ]; then
+                                echo "failed_task=$failed_task" >> $GITHUB_OUTPUT
+                            fi
+                            if [ ! -z "$report_path" ]; then
+                                echo "report_path=$report_path" >> $GITHUB_OUTPUT
+                            fi
+                        fi
                     done
 
