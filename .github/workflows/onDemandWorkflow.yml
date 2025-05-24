@@ -39,7 +39,7 @@ jobs:
                     script: |
                         const gradleTasks = JSON.parse(context.payload.inputs.gradle_tasks);
                         for (const tasks of gradleTasks) {
-                            const args = [...tasks, '--no-daemon', '--scan'];
+                            const args = [...tasks, '--scan'];
                             try {
                                 await exec.exec('./gradlew', args);
                             } catch (e) {
