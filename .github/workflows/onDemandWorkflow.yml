@@ -35,6 +35,7 @@ jobs:
 
             -   name: Build with Gradle
                 run: |
-                    echo "${{ inputs.gradle_tasks }}" | jq -c '.[]' | while read -r tasks; do
+                    echo '${{ inputs.gradle_tasks }}' | jq -c '.[]' | while read -r tasks; do
                         ./gradlew $(echo $tasks | jq -r '.[]') --scan
                     done
+
