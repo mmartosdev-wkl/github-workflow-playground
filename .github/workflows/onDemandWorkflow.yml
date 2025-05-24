@@ -34,16 +34,7 @@ jobs:
                     gradle-cleanup: true
 
             -   name: Build with Gradle
-                uses: actions/github-script@v7
-                with:
-                    script: |
-                        const gradleTasks = JSON.parse(context.payload.inputs.gradle_tasks);
-                        for (const tasks of gradleTasks) {
-                            const args = [...tasks, '--scan'];
-                            try {
-                                await exec.exec('./gradlew', args);
-                            } catch (e) {
-                                core.setFailed(`Gradle failed with error.`);
-                                break;
-                            }   
-                        }
+                run: |
+                    echo "${{ inputs.gradle_tasks }}" | jq -c '.[]' | while read -r tasks; do
+                        ./gradlew $(echo $tasks | jq -r '.[]') --scan
+                    done
