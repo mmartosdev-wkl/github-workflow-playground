@@ -32,6 +32,7 @@ jobs:
 
             -   name: Build with Gradle
                 continue-on-error: true
+                id: run_gradle
                 run: |
                     echo '${{ inputs.gradle_tasks }}' | jq -c '.[]' | while read -r tasks; do
                         exec 3>&1
@@ -72,3 +73,16 @@ jobs:
                             break
                         fi
                     done
+
+            -   name: Publish error report
+                if: steps.run_gradle.outputs.report_path != ''
+                uses: actions/upload-artifact@v4
+                with:
+                    name: unit-test-report
+                    path: ${{ steps.run_gradle.outputs.report_path }}
+
+            -   name: Fail job on failure
+                if: steps.run_gradle.outputs.failed_task != ''
+                run: |
+                    echo "Gradle failed on task: ${{ steps.run_gradle.outputs.failed_task }}" >> $GITHUB_STEP_SUMMARY
+                    exit 1
