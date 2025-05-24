@@ -65,7 +65,7 @@ jobs:
                                 fi
                             else
                                 # If no specific task failure message, use the first task from the list as reference
-                                failed_task=$tasks
+                                echo "failed_task=$tasks" >> $GITHUB_OUTPUT
                             fi
 
                             # Exit the loop on any non-zero exit code
