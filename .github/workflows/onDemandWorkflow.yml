@@ -29,9 +29,6 @@ jobs:
 
             -   name: Setup Gradle
                 uses: gradle/actions/setup-gradle@v4
-                with:
-                    cache-read-only: false
-                    gradle-cleanup: true
 
             -   name: Build with Gradle
                 run: |
