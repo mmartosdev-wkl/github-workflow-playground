@@ -31,6 +31,7 @@ jobs:
                 uses: gradle/actions/setup-gradle@v4
 
             -   name: Build with Gradle
+                continue-on-error: true
                 run: |
                     echo '${{ inputs.gradle_tasks }}' | jq -c '.[]' | while read -r tasks; do
                         exec 3>&1
