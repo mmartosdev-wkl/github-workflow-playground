@@ -39,29 +39,36 @@ jobs:
                             ./gradlew $(echo $tasks | jq -r '.[]') --scan 2>&1 \
                             | tee >(cat >&3)
                         )
+                        gradle_exit_code=$?
                         exec 3>&-
                     
                         # Initialize variables with empty values
                         echo "failed_task=" >> $GITHUB_OUTPUT
                         echo "report_path=" >> $GITHUB_OUTPUT
                     
-                        # Check if there's a failure message before attempting to parse it
-                        if echo "$output" | grep -q "Execution failed for task"; then
-                            # Extract failed task only if the failure message exists
-                            failed_task=$(echo "$output" | grep "Execution failed for task" | sed -E "s/.*task '(.*)'.*/\1/")
-                    
-                            # Extract report path and strip file:// prefix
-                            report_path=$(echo "$output" | grep -o "file:///.*\.html" | tac | head -n 1 | sed 's|file://||' | sed 's|/index.html$||' || echo "")                    
-                    
-                            # Update outputs only if we found the values
-                            if [ ! -z "$failed_task" ]; then
-                                echo "failed_task=$failed_task" >> $GITHUB_OUTPUT
-                            fi
-                            if [ ! -z "$report_path" ]; then
-                                echo "report_path=$report_path" >> $GITHUB_OUTPUT
+                        # Check the Gradle exit code
+                        if [ $gradle_exit_code -ne 0 ]; then
+                            # Check if there's a failure message before attempting to parse it
+                            if echo "$output" | grep -q "Execution failed for task"; then
+                                # Extract failed task only if the failure message exists
+                                failed_task=$(echo "$output" | grep "Execution failed for task" | sed -E "s/.*task '(.*)'.*/\1/")
+                        
+                                # Extract report path and strip file:// prefix
+                                report_path=$(echo "$output" | grep -o "file:///.*\.html" | tac | head -n 1 | sed 's|file://||' | sed 's|/index.html$||' || echo "")                    
+                        
+                                # Update outputs only if we found the values
+                                if [ ! -z "$failed_task" ]; then
+                                    echo "failed_task=$failed_task" >> $GITHUB_OUTPUT
+                                fi
+                                if [ ! -z "$report_path" ]; then
+                                    echo "report_path=$report_path" >> $GITHUB_OUTPUT
+                                fi
+                            else
+                                # If no specific task failure message, use the first task from the list as reference
+                                failed_task=$tasks
                             fi
 
-                            # Break the loop on failure
+                            # Exit the loop on any non-zero exit code
                             break
                         fi
                     done
