@@ -87,7 +87,7 @@ async function dispatchWorkflows({ github, context, commentId, commentBody }) {
      ref: pr.head.ref,
      /* optional, declared in the target workflow’s `on: workflow_dispatch: inputs:` */
      inputs: {
-       gradle_tasks: "build",
+       gradle_tasks: JSON.stringify(compatibleTasks),
      }
    });
 }

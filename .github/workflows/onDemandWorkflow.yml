@@ -34,5 +34,10 @@ jobs:
                     gradle-home-cache-cleanup: true
 
             -   name: Build with Gradle
-                run: |
-                    echo ${{ inputs.gradle_tasks }}
+                uses: actions/github-script@v7
+                with:
+                    script: |
+                        const gradleTasks = toJson(inputs.gradle_tasks);
+                        for (const tasks of gradleTasks) {
+                            core.info(tasks);
+                        }
