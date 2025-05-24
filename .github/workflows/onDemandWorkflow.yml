@@ -39,5 +39,5 @@ jobs:
                     script: |
                        const gradleTasks = JSON.parse(context.payload.inputs.gradle_tasks);
                        for (const tasks of gradleTasks) {
-                           core.info(tasks);
+                           await core.exec('./gradlew', tasks);
                        }
