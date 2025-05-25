@@ -32,30 +32,30 @@ async function dispatchWorkflows({ github, context, commentId, commentBody }) {
 
   // Step 3: Resolve and categorize tasks
   const tasksToRun = resolveTasks(commentBody);
-  const categorizeTasks = categorizeTasks(tasksToRun);
+  const categocategorizedTasksrizeTasks = categorizeTasks(tasksToRun);
 
   // Step 4: Dispatch checks tasks
-  if (categorizeTasks.checkTasks.length > 0) {
+  if (categorizedTasks.checkTasks.length > 0) {
     await github.rest.actions.createWorkflowDispatch({
       owner: owner,
       repo:  repo,
       workflow_id: "checkWorkflow.yml",
       ref: pr.head.ref,
       inputs: {
-        gradle_tasks: JSON.stringify(categorizeTasks.checkTasks),
+        gradle_tasks: JSON.stringify(categorizedTasks.checkTasks),
       }
     });
   }
 
   // Step 5: Dispatch commit tasks
-  if (categorizeTasks.commitTasks.length > 0) {
+  if (categorizedTasks.commitTasks.length > 0) {
     await github.rest.actions.createWorkflowDispatch({
       owner: owner,
       repo:  repo,
       workflow_id: "commitWorkflow.yml",
       ref: pr.head.ref,
       inputs: {
-        gradle_tasks: JSON.stringify(categorizeTasks.commitTasks),
+        gradle_tasks: JSON.stringify(categorizedTasks.commitTasks),
       }
     });
   }
