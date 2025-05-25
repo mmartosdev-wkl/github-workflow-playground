@@ -32,7 +32,7 @@ async function dispatchWorkflows({ github, context, commentId, commentBody }) {
 
   // Step 3: Resolve and categorize tasks
   const tasksToRun = resolveTasks(commentBody);
-  const categocategorizedTasksrizeTasks = categorizeTasks(tasksToRun);
+  const categorizedTasks = categorizeTasks(tasksToRun);
 
   // Step 4: Dispatch checks tasks
   if (categorizedTasks.checkTasks.length > 0) {
